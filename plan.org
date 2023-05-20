@@ -1,0 +1,8 @@
+#+title: Plan
+
+* Server [0/4]
+** TODO Create configuration
+** TODO Create a docker file
+** TODO Create a protobuf spec [0/2]
+*** TODO Create spec and generate types
+*** TODO Create a script for later generation
