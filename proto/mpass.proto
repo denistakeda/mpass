@@ -1,0 +1,17 @@
+syntax = "proto3";
+package pb;
+
+option go_package = "github.com/denistakeda/mpass/proto";
+
+service MpassService {
+  rpc SignUp(SignUpRequest) returns (SignUpResponse);
+}
+
+message SignUpRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message SignUpResponse {
+  string token = 1;
+}
