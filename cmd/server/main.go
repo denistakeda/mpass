@@ -1,37 +1,41 @@
 package main
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/denistakeda/mpass/internal/config"
+	"github.com/denistakeda/mpass/internal/logging"
 	"github.com/denistakeda/mpass/internal/server"
 )
 
 // Generate protobuf specification:
 // go:generate protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/mpass.proto
 func main() {
+	logService := logging.New()
+	logger := logService.ComponentLogger("main")
+
 	conf, err := config.ParseServerCfg()
 	if err != nil {
-		log.Fatal("failed to read the configuration")
+		logger.Fatal().Msg("failed to read the configuration")
 	}
-	log.Printf("Configuration: %v\n", conf)
+	logger.Info().Msgf("Configuration: %v", conf)
 
 	interruptChan := handleInterrupt()
 
 	srv := server.New(server.NewServerParams{
-		Host: conf.Host,
+		Host:       conf.Host,
+		LogService: logService,
 	})
 	serverErrors := srv.Start()
 	defer srv.Stop()
 
 	select {
 	case serverError := <-serverErrors:
-		log.Println(serverError)
+		logger.Error().Err(serverError).Msg("server error")
 	case <-interruptChan:
-		log.Println("Server was interrupted")
+		logger.Info().Msg("Server was interrupted")
 	}
 }
 
