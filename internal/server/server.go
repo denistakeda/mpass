@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net"
 
 	"github.com/denistakeda/mpass/internal/ports"
@@ -8,34 +9,36 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type (
 	server struct {
 		pb.UnimplementedMpassServiceServer
 
-		logger zerolog.Logger
+		logger      zerolog.Logger
+		authService authService
 
-		host    string
-		storage storage
-		s       *grpc.Server
+		host string
+		s    *grpc.Server
 	}
 
-	storage interface {
+	authService interface {
+		SignUp(ctx context.Context, login, password string) (string, error)
 	}
 )
 
 type NewServerParams struct {
-	Host       string
-	Storage    storage
-	LogService ports.LogService
+	Host        string
+	LogService  ports.LogService
+	AuthService authService
 }
 
 func New(params NewServerParams) *server {
 	return &server{
-		host:    params.Host,
-		storage: params.Storage,
-		logger:  params.LogService.ComponentLogger("server"),
+		host:   params.Host,
+		logger: params.LogService.ComponentLogger("server"),
 	}
 }
 
@@ -65,4 +68,17 @@ func (s *server) Start() <-chan error {
 func (s *server) Stop() {
 	s.s.Stop()
 	s.logger.Info().Msg("gRPC server stopped")
+}
+
+func (s *server) SignUp(ctx context.Context, req *pb.SignUpRequest) (*pb.SignUpResponse, error) {
+	var resp pb.SignUpResponse
+
+	token, err := s.authService.SignUp(ctx, req.Login, req.Password)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to create a user")
+	}
+
+	resp.Token = token
+
+	return &resp, nil
 }

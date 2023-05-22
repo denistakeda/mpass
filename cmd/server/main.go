@@ -27,6 +27,8 @@ func main() {
 	srv := server.New(server.NewServerParams{
 		Host:       conf.Host,
 		LogService: logService,
+		// TODO: create auth service
+		// AuthService: authService,
 	})
 	serverErrors := srv.Start()
 	defer srv.Stop()
