@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	MpassService_SignUp_FullMethodName = "/proto.MpassService/SignUp"
+	MpassService_SignUp_FullMethodName = "/pb.MpassService/SignUp"
+	MpassService_SignIn_FullMethodName = "/pb.MpassService/SignIn"
 )
 
 // MpassServiceClient is the client API for MpassService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MpassServiceClient interface {
 	SignUp(ctx context.Context, in *SignUpRequest, opts ...grpc.CallOption) (*SignUpResponse, error)
+	SignIn(ctx context.Context, in *SignInRequest, opts ...grpc.CallOption) (*SignInResponse, error)
 }
 
 type mpassServiceClient struct {
@@ -46,11 +48,21 @@ func (c *mpassServiceClient) SignUp(ctx context.Context, in *SignUpRequest, opts
 	return out, nil
 }
 
+func (c *mpassServiceClient) SignIn(ctx context.Context, in *SignInRequest, opts ...grpc.CallOption) (*SignInResponse, error) {
+	out := new(SignInResponse)
+	err := c.cc.Invoke(ctx, MpassService_SignIn_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MpassServiceServer is the server API for MpassService service.
 // All implementations must embed UnimplementedMpassServiceServer
 // for forward compatibility
 type MpassServiceServer interface {
 	SignUp(context.Context, *SignUpRequest) (*SignUpResponse, error)
+	SignIn(context.Context, *SignInRequest) (*SignInResponse, error)
 	mustEmbedUnimplementedMpassServiceServer()
 }
 
@@ -60,6 +72,9 @@ type UnimplementedMpassServiceServer struct {
 
 func (UnimplementedMpassServiceServer) SignUp(context.Context, *SignUpRequest) (*SignUpResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SignUp not implemented")
+}
+func (UnimplementedMpassServiceServer) SignIn(context.Context, *SignInRequest) (*SignInResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SignIn not implemented")
 }
 func (UnimplementedMpassServiceServer) mustEmbedUnimplementedMpassServiceServer() {}
 
@@ -92,16 +107,38 @@ func _MpassService_SignUp_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MpassService_SignIn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SignInRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MpassServiceServer).SignIn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MpassService_SignIn_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MpassServiceServer).SignIn(ctx, req.(*SignInRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MpassService_ServiceDesc is the grpc.ServiceDesc for MpassService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var MpassService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.MpassService",
+	ServiceName: "pb.MpassService",
 	HandlerType: (*MpassServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "SignUp",
 			Handler:    _MpassService_SignUp_Handler,
+		},
+		{
+			MethodName: "SignIn",
+			Handler:    _MpassService_SignIn_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
