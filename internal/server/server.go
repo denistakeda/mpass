@@ -26,6 +26,7 @@ type (
 
 	authService interface {
 		SignUp(ctx context.Context, login, password string) (string, error)
+		SignIn(ctx context.Context, login, password string) (string, error)
 	}
 )
 
@@ -76,7 +77,22 @@ func (s *server) SignUp(ctx context.Context, req *pb.SignUpRequest) (*pb.SignUpR
 
 	token, err := s.authService.SignUp(ctx, req.Login, req.Password)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to create a user")
+		s.logger.Error().Err(err).Str("login", req.Login).Msg("failed to sign up")
+		return nil, status.Error(codes.Internal, "failed to sign up")
+	}
+
+	resp.Token = token
+
+	return &resp, nil
+}
+
+func (s *server) SignIn(ctx context.Context, req *pb.SignInRequest) (*pb.SignInResponse, error) {
+	var resp pb.SignInResponse
+
+	token, err := s.authService.SignIn(ctx, req.Login, req.Password)
+	if err != nil {
+		s.logger.Error().Err(err).Str("login", req.Login).Msg("failed to sign in")
+		return nil, status.Error(codes.Internal, "failed to sign in")
 	}
 
 	resp.Token = token

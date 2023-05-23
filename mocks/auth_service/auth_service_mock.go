@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	domain "github.com/denistakeda/mpass/internal/domain"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -46,4 +47,19 @@ func (m *MockuserStore) AddNewUser(ctx context.Context, login, passwordHash stri
 func (mr *MockuserStoreMockRecorder) AddNewUser(ctx, login, passwordHash interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddNewUser", reflect.TypeOf((*MockuserStore)(nil).AddNewUser), ctx, login, passwordHash)
+}
+
+// GetUser mocks base method.
+func (m *MockuserStore) GetUser(ctx context.Context, login string) (domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUser", ctx, login)
+	ret0, _ := ret[0].(domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUser indicates an expected call of GetUser.
+func (mr *MockuserStoreMockRecorder) GetUser(ctx, login interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockuserStore)(nil).GetUser), ctx, login)
 }

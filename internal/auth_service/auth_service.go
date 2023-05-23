@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/denistakeda/mpass/internal/domain"
 	"github.com/denistakeda/mpass/internal/ports"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pkg/errors"
@@ -21,6 +22,7 @@ type (
 
 	userStore interface {
 		AddNewUser(ctx context.Context, login, passwordHash string) error
+		GetUser(ctx context.Context, login string) (domain.User, error)
 	}
 )
 
@@ -59,6 +61,25 @@ func (a *authService) SignUp(ctx context.Context, login, password string) (strin
 		return "", errors.Errorf("login %q is busy", login)
 	}
 
+	return a.generateJWT(login)
+}
+
+func (a *authService) SignIn(ctx context.Context, login, password string) (string, error) {
+	if login == "" {
+		return "", errors.New("login is empty")
+	}
+	if password == "" {
+		return "", errors.New("password is empty")
+	}
+
+	user, err := a.userStore.GetUser(ctx, login)
+	if err != nil {
+		return "", errors.Wrap(err, "login or password incorrect")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+		return "", errors.Wrap(err, "login or password incorrect")
+	}
 	return a.generateJWT(login)
 }
 
