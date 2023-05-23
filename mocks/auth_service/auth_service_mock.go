@@ -35,15 +35,15 @@ func (m *MockuserStore) EXPECT() *MockuserStoreMockRecorder {
 }
 
 // AddNewUser mocks base method.
-func (m *MockuserStore) AddNewUser(ctx context.Context, login, password string) error {
+func (m *MockuserStore) AddNewUser(ctx context.Context, login, passwordHash string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddNewUser", ctx, login, password)
+	ret := m.ctrl.Call(m, "AddNewUser", ctx, login, passwordHash)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddNewUser indicates an expected call of AddNewUser.
-func (mr *MockuserStoreMockRecorder) AddNewUser(ctx, login, password interface{}) *gomock.Call {
+func (mr *MockuserStoreMockRecorder) AddNewUser(ctx, login, passwordHash interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddNewUser", reflect.TypeOf((*MockuserStore)(nil).AddNewUser), ctx, login, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddNewUser", reflect.TypeOf((*MockuserStore)(nil).AddNewUser), ctx, login, passwordHash)
 }

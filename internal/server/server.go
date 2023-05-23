@@ -37,8 +37,9 @@ type NewServerParams struct {
 
 func New(params NewServerParams) *server {
 	return &server{
-		host:   params.Host,
-		logger: params.LogService.ComponentLogger("server"),
+		host:        params.Host,
+		logger:      params.LogService.ComponentLogger("server"),
+		authService: params.AuthService,
 	}
 }
 
