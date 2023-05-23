@@ -14,7 +14,8 @@ import (
 
 // Config includes all the configuration options for the server.
 type Config struct {
-	Host string `json:"host"`
+	Host   string `json:"host"`
+	Secret string `json:"secret"`
 }
 
 // ParseServerCfg reads the configuration either from "config" flag or from the "CONFIG_JSON" env variable

@@ -5,9 +5,19 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/denistakeda/mpass/internal/auth_service"
 	"github.com/denistakeda/mpass/internal/config"
 	"github.com/denistakeda/mpass/internal/logging"
+	"github.com/denistakeda/mpass/internal/ports"
 	"github.com/denistakeda/mpass/internal/server"
+	"github.com/denistakeda/mpass/internal/user_store"
+)
+
+type (
+	runnable interface {
+		Start() <-chan error
+		Stop()
+	}
 )
 
 // Generate protobuf specification:
@@ -24,12 +34,7 @@ func main() {
 
 	interruptChan := handleInterrupt()
 
-	srv := server.New(server.NewServerParams{
-		Host:       conf.Host,
-		LogService: logService,
-		// TODO: create auth service
-		// AuthService: authService,
-	})
+	srv := buildServer(conf, logService)
 	serverErrors := srv.Start()
 	defer srv.Stop()
 
@@ -39,6 +44,25 @@ func main() {
 	case <-interruptChan:
 		logger.Info().Msg("Server was interrupted")
 	}
+}
+
+func buildServer(conf config.Config, logService ports.LogService) runnable {
+	userStore := user_store.NewInMemory()
+
+	authService := auth_service.New(auth_service.NewAuthServiceParams{
+		Secret: conf.Secret,
+
+		LogService: logService,
+		UserStore:  userStore,
+	})
+
+	s := server.New(server.NewServerParams{
+		Host:        conf.Host,
+		LogService:  logService,
+		AuthService: authService,
+	})
+
+	return s
 }
 
 func handleInterrupt() <-chan os.Signal {

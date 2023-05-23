@@ -1,3 +1,4 @@
 {
-    "host": ":3200"
+    "host": ":3200",
+    "secret": "secret"
 }
