@@ -20,7 +20,7 @@ type (
 	}
 
 	userStore interface {
-		AddNewUser(ctx context.Context, login, password string) error
+		AddNewUser(ctx context.Context, login, passwordHash string) error
 	}
 )
 
