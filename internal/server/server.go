@@ -2,12 +2,13 @@ package server
 
 import (
 	"context"
-	"log"
 	"net"
 
 	"github.com/denistakeda/mpass/internal/domain"
+	"github.com/denistakeda/mpass/internal/domain/record"
 	"github.com/denistakeda/mpass/internal/ports"
 	pb "github.com/denistakeda/mpass/proto"
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
@@ -20,8 +21,9 @@ type (
 	server struct {
 		pb.UnimplementedMpassServiceServer
 
-		logger      zerolog.Logger
-		authService authService
+		logger        zerolog.Logger
+		authService   authService
+		recordService recordService
 
 		host     string
 		usedHost string // provided host might differ from the actually used one
@@ -33,21 +35,27 @@ type (
 		SignIn(ctx context.Context, login, password string) (string, error)
 		AuthenticateUser(ctx context.Context, token string) (domain.User, error)
 	}
+
+	recordService interface {
+		AddRecords(ctx context.Context, login string, records []ports.Record) error
+	}
 )
 
 var userKey struct{}
 
 type NewServerParams struct {
-	Host        string
-	LogService  ports.LogService
-	AuthService authService
+	Host          string
+	LogService    ports.LogService
+	AuthService   authService
+	RecordService recordService
 }
 
 func New(params NewServerParams) *server {
 	return &server{
-		host:        params.Host,
-		logger:      params.LogService.ComponentLogger("server"),
-		authService: params.AuthService,
+		host:          params.Host,
+		logger:        params.LogService.ComponentLogger("server"),
+		authService:   params.AuthService,
+		recordService: params.RecordService,
 	}
 }
 
@@ -113,6 +121,17 @@ func (s *server) SignIn(ctx context.Context, req *pb.SignInRequest) (*pb.SignInR
 	return &resp, nil
 }
 
+func (s *server) AddRecords(ctx context.Context, req *pb.AddRecordsRequest) (*empty.Empty, error) {
+	user, ok := ctx.Value(userKey).(domain.User)
+	if !ok {
+		return nil, status.Errorf(codes.Unauthenticated, "user is not authenticated")
+	}
+
+	s.recordService.AddRecords(ctx, user.Login, toDomainRecords(req.Records))
+
+	return &empty.Empty{}, nil
+}
+
 // authFunc is used by a middleware to authenticate requests
 func (s *server) authFunc(ctx context.Context) (context.Context, error) {
 	token, err := auth.AuthFromMD(ctx, "bearer")
@@ -126,4 +145,14 @@ func (s *server) authFunc(ctx context.Context) (context.Context, error) {
 	}
 
 	return context.WithValue(ctx, userKey, user), nil
+}
+
+func toDomainRecords(recs []*pb.Record) []ports.Record {
+	res := make([]ports.Record, 0, len(recs))
+
+	for _, rec := range recs {
+		res = append(res, record.FromProto(rec))
+	}
+
+	return res
 }

@@ -12,8 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 func Test_SignUp(t *testing.T) {
@@ -58,6 +60,35 @@ func Test_SignIn(t *testing.T) {
 		signInResp, err := c.SignIn(ctx, &signInReq)
 		assert.NoError(t, err, "should successfully sign in")
 		assert.NotEmpty(t, signInResp.Token)
+	})
+}
+
+func Test_AddRecords(t *testing.T) {
+	serverTest(t, "should require authentication", func(t *testing.T, c proto.MpassServiceClient) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		_, err := c.AddRecords(ctx, &proto.AddRecordsRequest{
+			Records: []*proto.Record{},
+		})
+
+		assert.Error(t, err)
+		if err != nil {
+			e, ok := status.FromError(err)
+			assert.True(t, ok, "should return error with a status")
+			if ok {
+				assert.Equalf(t, codes.Unauthenticated, e.Code(), "should return Unauthenticated status code")
+			}
+		}
+	})
+
+	serverTest(t, "add single record", func(t *testing.T, c proto.MpassServiceClient) {
+		ctx := authorisedContext(t, c, "login", "password")
+
+		_, err := c.AddRecords(ctx, &proto.AddRecordsRequest{
+			Records: []*proto.Record{},
+		})
+		assert.NoError(t, err)
 	})
 }
 
