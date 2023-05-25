@@ -83,6 +83,20 @@ func (a *authService) SignIn(ctx context.Context, login, password string) (strin
 	return a.generateJWT(login)
 }
 
+func (a *authService) AuthenticateUser(ctx context.Context, token string) (domain.User, error) {
+	login, err := a.extractLoginFromToken(token)
+	if err != nil {
+		return domain.User{}, errors.Wrap(err, "failed to authenticate user")
+	}
+
+	user, err := a.userStore.GetUser(ctx, login)
+	if err != nil {
+		return domain.User{}, errors.Wrap(err, "no such user")
+	}
+
+	return user, nil
+}
+
 func (a *authService) generateJWT(login string) (string, error) {
 	// Create a new token object, specifying signing method and the claims
 	// you would like it to contain.
@@ -98,4 +112,24 @@ func (a *authService) generateJWT(login string) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func (a *authService) extractLoginFromToken(token string) (string, error) {
+	t, err := jwt.Parse(token, func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(a.secret), nil
+	})
+
+	if err != nil {
+		return "", errors.Wrap(err, "failed to parse token")
+	}
+
+	if claims, ok := t.Claims.(jwt.MapClaims); ok && t.Valid {
+		return claims["login"].(string), nil
+	} else {
+		return "", errors.New("failed to parse token")
+	}
 }

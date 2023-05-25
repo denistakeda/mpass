@@ -2,10 +2,13 @@ package server
 
 import (
 	"context"
+	"log"
 	"net"
 
+	"github.com/denistakeda/mpass/internal/domain"
 	"github.com/denistakeda/mpass/internal/ports"
 	pb "github.com/denistakeda/mpass/proto"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/auth"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
@@ -20,15 +23,19 @@ type (
 		logger      zerolog.Logger
 		authService authService
 
-		host string
-		s    *grpc.Server
+		host     string
+		usedHost string // provided host might differ from the actually used one
+		s        *grpc.Server
 	}
 
 	authService interface {
 		SignUp(ctx context.Context, login, password string) (string, error)
 		SignIn(ctx context.Context, login, password string) (string, error)
+		AuthenticateUser(ctx context.Context, token string) (domain.User, error)
 	}
 )
+
+var userKey struct{}
 
 type NewServerParams struct {
 	Host        string
@@ -53,7 +60,9 @@ func (s *server) Start() <-chan error {
 		return out
 	}
 
-	s.s = grpc.NewServer()
+	s.usedHost = listen.Addr().String()
+
+	s.s = grpc.NewServer(grpc.UnaryInterceptor(auth.UnaryServerInterceptor(s.authFunc)))
 	pb.RegisterMpassServiceServer(s.s, s)
 
 	s.logger.Info().Msg("gRPC server started")
@@ -70,6 +79,10 @@ func (s *server) Start() <-chan error {
 func (s *server) Stop() {
 	s.s.Stop()
 	s.logger.Info().Msg("gRPC server stopped")
+}
+
+func (s *server) Host() string {
+	return s.usedHost
 }
 
 func (s *server) SignUp(ctx context.Context, req *pb.SignUpRequest) (*pb.SignUpResponse, error) {
@@ -98,4 +111,19 @@ func (s *server) SignIn(ctx context.Context, req *pb.SignInRequest) (*pb.SignInR
 	resp.Token = token
 
 	return &resp, nil
+}
+
+// authFunc is used by a middleware to authenticate requests
+func (s *server) authFunc(ctx context.Context) (context.Context, error) {
+	token, err := auth.AuthFromMD(ctx, "bearer")
+	if err != nil {
+		return ctx, nil // not all endpoints require authorization
+	}
+
+	user, err := s.authService.AuthenticateUser(ctx, token)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
+	}
+
+	return context.WithValue(ctx, userKey, user), nil
 }

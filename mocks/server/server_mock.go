@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	domain "github.com/denistakeda/mpass/internal/domain"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -32,6 +33,21 @@ func NewMockauthService(ctrl *gomock.Controller) *MockauthService {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockauthService) EXPECT() *MockauthServiceMockRecorder {
 	return m.recorder
+}
+
+// AuthenticateUser mocks base method.
+func (m *MockauthService) AuthenticateUser(ctx context.Context, token string) (domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthenticateUser", ctx, token)
+	ret0, _ := ret[0].(domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AuthenticateUser indicates an expected call of AuthenticateUser.
+func (mr *MockauthServiceMockRecorder) AuthenticateUser(ctx, token interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthenticateUser", reflect.TypeOf((*MockauthService)(nil).AuthenticateUser), ctx, token)
 }
 
 // SignIn mocks base method.

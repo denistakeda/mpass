@@ -14,9 +14,10 @@ import (
 )
 
 type (
-	runnable interface {
+	srv interface {
 		Start() <-chan error
 		Stop()
+		Host() string
 	}
 )
 
@@ -44,7 +45,7 @@ func main() {
 	}
 }
 
-func buildServer(conf config.Config, logService ports.LogService) runnable {
+func buildServer(conf config.Config, logService ports.LogService) srv {
 	userStore := user_store.NewInMemory()
 
 	authService := auth_service.New(auth_service.NewAuthServiceParams{
