@@ -37,7 +37,7 @@ type (
 	}
 
 	recordService interface {
-		AddRecords(ctx context.Context, login string, records []ports.Record) error
+		AddRecords(ctx context.Context, login string, records []record.Record) error
 	}
 )
 
@@ -147,8 +147,8 @@ func (s *server) authFunc(ctx context.Context) (context.Context, error) {
 	return context.WithValue(ctx, userKey, user), nil
 }
 
-func toDomainRecords(recs []*pb.Record) []ports.Record {
-	res := make([]ports.Record, 0, len(recs))
+func toDomainRecords(recs []*pb.Record) []record.Record {
+	res := make([]record.Record, 0, len(recs))
 
 	for _, rec := range recs {
 		res = append(res, record.FromProto(rec))

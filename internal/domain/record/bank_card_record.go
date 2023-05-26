@@ -3,11 +3,10 @@ package record
 import (
 	"time"
 
-	"github.com/denistakeda/mpass/internal/ports"
 	"github.com/denistakeda/mpass/proto"
 )
 
-var _ ports.Record = (*bankCardRecord)(nil)
+var _ Record = (*bankCardRecord)(nil)
 
 type bankCardRecord struct {
 	id string

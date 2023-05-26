@@ -1,11 +1,14 @@
 package record
 
 import (
-	"github.com/denistakeda/mpass/internal/ports"
 	"github.com/denistakeda/mpass/proto"
 )
 
-func FromProto(rec *proto.Record) ports.Record {
+type Record interface {
+	// TODO: add ToProto function
+}
+
+func FromProto(rec *proto.Record) Record {
 	switch i := rec.Record.(type) {
 	case *proto.Record_LoginPasswordRecord:
 		return loginPasswordRecordFromProto(rec.Id, i.LoginPasswordRecord)

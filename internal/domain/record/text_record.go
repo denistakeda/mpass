@@ -1,11 +1,10 @@
 package record
 
 import (
-	"github.com/denistakeda/mpass/internal/ports"
 	"github.com/denistakeda/mpass/proto"
 )
 
-var _ ports.Record = (*textRecord)(nil)
+var _ Record = (*textRecord)(nil)
 
 type textRecord struct {
 	id string

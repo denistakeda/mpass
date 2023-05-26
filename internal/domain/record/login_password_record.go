@@ -1,11 +1,10 @@
 package record
 
 import (
-	"github.com/denistakeda/mpass/internal/ports"
 	"github.com/denistakeda/mpass/proto"
 )
 
-var _ ports.Record = (*loginPasswordRecord)(nil)
+var _ Record = (*loginPasswordRecord)(nil)
 
 type loginPasswordRecord struct {
 	id string
