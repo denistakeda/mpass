@@ -86,7 +86,23 @@ func Test_AddRecords(t *testing.T) {
 		ctx := authorisedContext(t, c, "login", "password")
 
 		_, err := c.AddRecords(ctx, &proto.AddRecordsRequest{
-			Records: []*proto.Record{},
+			Records: []*proto.Record{
+				{
+					Id: "123",
+					Record: &proto.Record_LoginPasswordRecord{
+						LoginPasswordRecord: &proto.LoginPasswordRecord{
+							Login:    "login",
+							Password: "password",
+						},
+					},
+				},
+				{
+					Id: "456",
+					Record: &proto.Record_TextRecord{
+						TextRecord: &proto.TextRecord{Text: "just a text"},
+					},
+				},
+			},
 		})
 		assert.NoError(t, err)
 	})

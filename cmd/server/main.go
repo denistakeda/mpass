@@ -9,6 +9,8 @@ import (
 	"github.com/denistakeda/mpass/internal/config"
 	"github.com/denistakeda/mpass/internal/logging"
 	"github.com/denistakeda/mpass/internal/ports"
+	"github.com/denistakeda/mpass/internal/record_service"
+	"github.com/denistakeda/mpass/internal/record_store"
 	"github.com/denistakeda/mpass/internal/server"
 	"github.com/denistakeda/mpass/internal/user_store"
 )
@@ -46,8 +48,11 @@ func main() {
 }
 
 func buildServer(conf config.Config, logService ports.LogService) srv {
+	// Stores
 	userStore := user_store.NewInMemory()
+	recordStore := record_store.NewInMemory()
 
+	// Services
 	authService := auth_service.New(auth_service.NewAuthServiceParams{
 		Secret: conf.Secret,
 
@@ -55,10 +60,14 @@ func buildServer(conf config.Config, logService ports.LogService) srv {
 		UserStore:  userStore,
 	})
 
+	recordService := record_service.New(logService, recordStore)
+
+	// One ring to rule them all
 	s := server.New(server.NewServerParams{
-		Host:        conf.Host,
-		LogService:  logService,
-		AuthService: authService,
+		Host:          conf.Host,
+		LogService:    logService,
+		AuthService:   authService,
+		RecordService: recordService,
 	})
 
 	return s
