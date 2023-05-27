@@ -6,7 +6,6 @@ package config
 import (
 	"encoding/json"
 	"flag"
-	"io/ioutil"
 	"os"
 
 	"github.com/pkg/errors"
@@ -47,7 +46,7 @@ func getConfigJson() (string, error) {
 		return "", errors.New("confilg path was not provided")
 	}
 
-	content, err := ioutil.ReadFile(*path)
+	content, err := os.ReadFile(*path)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to read configuration file %q", *path)
 	}

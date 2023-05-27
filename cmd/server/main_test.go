@@ -125,7 +125,7 @@ func Test_AddRecords(t *testing.T) {
 
 		_, err := c.AddRecords(ctx, &proto.AddRecordsRequest{
 			Records: []*proto.Record{
-				loginPasswordRecord, textRecord, binaryRecord, textRecord,
+				loginPasswordRecord, textRecord, binaryRecord, bankCardRecord,
 			},
 		})
 

@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	"github.com/denistakeda/mpass/internal/domain"
@@ -127,7 +128,11 @@ func (s *server) AddRecords(ctx context.Context, req *pb.AddRecordsRequest) (*em
 		return nil, status.Errorf(codes.Unauthenticated, "user is not authenticated")
 	}
 
-	s.recordService.AddRecords(ctx, user.Login, toDomainRecords(req.Records))
+	if err := s.recordService.AddRecords(ctx, user.Login, toDomainRecords(req.Records)); err != nil {
+		msg := fmt.Sprintf("failed to store records for user %q", user.Login)
+		s.logger.Error().Err(err).Msg(msg)
+		return &empty.Empty{}, status.Errorf(codes.Internal, msg)
+	}
 
 	return &empty.Empty{}, nil
 }
