@@ -4,6 +4,7 @@ package pb;
 option go_package = "github.com/denistakeda/mpass/proto";
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 service MpassService {
   rpc SignUp(SignUpRequest) returns (SignUpResponse);
@@ -35,12 +36,13 @@ message AddRecordsRequest {
 
 message Record {
   string id = 1;
+  google.protobuf.Timestamp lastUpdateDate = 2;
 
   oneof record {
-    LoginPasswordRecord loginPasswordRecord = 2;
-    TextRecord textRecord = 3;
-    BinaryRecord binaryRecord = 4;
-    BankCardRecord bankCardRecord = 5;
+    LoginPasswordRecord loginPasswordRecord = 3;
+    TextRecord textRecord = 4;
+    BinaryRecord binaryRecord = 5;
+    BankCardRecord bankCardRecord = 6;
   }
 }
 
