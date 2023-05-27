@@ -16,11 +16,14 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
 	loginPasswordRecord = &proto.Record{
-		Id: "123",
+		Id:             "123",
+		LastUpdateDate: timestamppb.Now(),
+
 		Record: &proto.Record_LoginPasswordRecord{
 			LoginPasswordRecord: &proto.LoginPasswordRecord{
 				Login:    "login",
@@ -30,21 +33,27 @@ var (
 	}
 
 	textRecord = &proto.Record{
-		Id: "456",
+		Id:             "456",
+		LastUpdateDate: timestamppb.Now(),
+
 		Record: &proto.Record_TextRecord{
 			TextRecord: &proto.TextRecord{Text: "just a text"},
 		},
 	}
 
 	binaryRecord = &proto.Record{
-		Id: "456",
+		Id:             "456",
+		LastUpdateDate: timestamppb.Now(),
+
 		Record: &proto.Record_BinaryRecord{
 			BinaryRecord: &proto.BinaryRecord{Binary: []byte("binary text")},
 		},
 	}
 
 	bankCardRecord = &proto.Record{
-		Id: "456",
+		Id:             "456",
+		LastUpdateDate: timestamppb.Now(),
+
 		Record: &proto.Record_BankCardRecord{
 			BankCardRecord: &proto.BankCardRecord{
 				CardCode: "1234 1234 1234 1234",

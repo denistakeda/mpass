@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/denistakeda/mpass/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var _ Record = (*binaryRecord)(nil)
@@ -30,4 +31,15 @@ func (r *binaryRecord) GetId() string {
 
 func (r *binaryRecord) GetLastUpdateDate() time.Time {
 	return r.lastUpdateDate
+}
+
+func (r *binaryRecord) ToProto() *proto.Record {
+	return &proto.Record{
+		Id:             r.id,
+		LastUpdateDate: timestamppb.New(r.lastUpdateDate),
+
+		Record: &proto.Record_BinaryRecord{
+			BinaryRecord: &proto.BinaryRecord{Binary: r.binary},
+		},
+	}
 }

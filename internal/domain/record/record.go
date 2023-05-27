@@ -9,6 +9,7 @@ import (
 type Record interface {
 	GetId() string
 	GetLastUpdateDate() time.Time
+	ToProto() *proto.Record
 }
 
 func FromProto(rec *proto.Record) Record {

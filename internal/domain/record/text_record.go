@@ -1,8 +1,10 @@
 package record
 
 import (
-	"github.com/denistakeda/mpass/proto"
 	"time"
+
+	"github.com/denistakeda/mpass/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var _ Record = (*textRecord)(nil)
@@ -29,4 +31,15 @@ func (r *textRecord) GetId() string {
 
 func (r *textRecord) GetLastUpdateDate() time.Time {
 	return r.lastUpdateDate
+}
+
+func (r *textRecord) ToProto() *proto.Record {
+	return &proto.Record{
+		Id:             r.id,
+		LastUpdateDate: timestamppb.New(r.lastUpdateDate),
+
+		Record: &proto.Record_TextRecord{
+			TextRecord: &proto.TextRecord{Text: r.text},
+		},
+	}
 }
