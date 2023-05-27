@@ -18,6 +18,44 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+var (
+	loginPasswordRecord = &proto.Record{
+		Id: "123",
+		Record: &proto.Record_LoginPasswordRecord{
+			LoginPasswordRecord: &proto.LoginPasswordRecord{
+				Login:    "login",
+				Password: "password",
+			},
+		},
+	}
+
+	textRecord = &proto.Record{
+		Id: "456",
+		Record: &proto.Record_TextRecord{
+			TextRecord: &proto.TextRecord{Text: "just a text"},
+		},
+	}
+
+	binaryRecord = &proto.Record{
+		Id: "456",
+		Record: &proto.Record_BinaryRecord{
+			BinaryRecord: &proto.BinaryRecord{Binary: []byte("binary text")},
+		},
+	}
+
+	bankCardRecord = &proto.Record{
+		Id: "456",
+		Record: &proto.Record_BankCardRecord{
+			BankCardRecord: &proto.BankCardRecord{
+				CardCode: "1234 1234 1234 1234",
+				Month:    1,
+				Day:      1,
+				Code:     123,
+			},
+		},
+	}
+)
+
 func Test_SignUp(t *testing.T) {
 	serverTest(t, "successful sign up", func(t *testing.T, c proto.MpassServiceClient) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
@@ -87,23 +125,10 @@ func Test_AddRecords(t *testing.T) {
 
 		_, err := c.AddRecords(ctx, &proto.AddRecordsRequest{
 			Records: []*proto.Record{
-				{
-					Id: "123",
-					Record: &proto.Record_LoginPasswordRecord{
-						LoginPasswordRecord: &proto.LoginPasswordRecord{
-							Login:    "login",
-							Password: "password",
-						},
-					},
-				},
-				{
-					Id: "456",
-					Record: &proto.Record_TextRecord{
-						TextRecord: &proto.TextRecord{Text: "just a text"},
-					},
-				},
+				loginPasswordRecord, textRecord, binaryRecord, textRecord,
 			},
 		})
+
 		assert.NoError(t, err)
 	})
 }
