@@ -23,6 +23,7 @@ const (
 	MpassService_SignUp_FullMethodName     = "/pb.MpassService/SignUp"
 	MpassService_SignIn_FullMethodName     = "/pb.MpassService/SignIn"
 	MpassService_AddRecords_FullMethodName = "/pb.MpassService/AddRecords"
+	MpassService_AllRecords_FullMethodName = "/pb.MpassService/AllRecords"
 )
 
 // MpassServiceClient is the client API for MpassService service.
@@ -32,6 +33,7 @@ type MpassServiceClient interface {
 	SignUp(ctx context.Context, in *SignUpRequest, opts ...grpc.CallOption) (*SignUpResponse, error)
 	SignIn(ctx context.Context, in *SignInRequest, opts ...grpc.CallOption) (*SignInResponse, error)
 	AddRecords(ctx context.Context, in *AddRecordsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	AllRecords(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*AllRecordsResponse, error)
 }
 
 type mpassServiceClient struct {
@@ -69,6 +71,15 @@ func (c *mpassServiceClient) AddRecords(ctx context.Context, in *AddRecordsReque
 	return out, nil
 }
 
+func (c *mpassServiceClient) AllRecords(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*AllRecordsResponse, error) {
+	out := new(AllRecordsResponse)
+	err := c.cc.Invoke(ctx, MpassService_AllRecords_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MpassServiceServer is the server API for MpassService service.
 // All implementations must embed UnimplementedMpassServiceServer
 // for forward compatibility
@@ -76,6 +87,7 @@ type MpassServiceServer interface {
 	SignUp(context.Context, *SignUpRequest) (*SignUpResponse, error)
 	SignIn(context.Context, *SignInRequest) (*SignInResponse, error)
 	AddRecords(context.Context, *AddRecordsRequest) (*empty.Empty, error)
+	AllRecords(context.Context, *empty.Empty) (*AllRecordsResponse, error)
 	mustEmbedUnimplementedMpassServiceServer()
 }
 
@@ -91,6 +103,9 @@ func (UnimplementedMpassServiceServer) SignIn(context.Context, *SignInRequest) (
 }
 func (UnimplementedMpassServiceServer) AddRecords(context.Context, *AddRecordsRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddRecords not implemented")
+}
+func (UnimplementedMpassServiceServer) AllRecords(context.Context, *empty.Empty) (*AllRecordsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AllRecords not implemented")
 }
 func (UnimplementedMpassServiceServer) mustEmbedUnimplementedMpassServiceServer() {}
 
@@ -159,6 +174,24 @@ func _MpassService_AddRecords_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MpassService_AllRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MpassServiceServer).AllRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MpassService_AllRecords_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MpassServiceServer).AllRecords(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MpassService_ServiceDesc is the grpc.ServiceDesc for MpassService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -177,6 +210,10 @@ var MpassService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddRecords",
 			Handler:    _MpassService_AddRecords_Handler,
+		},
+		{
+			MethodName: "AllRecords",
+			Handler:    _MpassService_AllRecords_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

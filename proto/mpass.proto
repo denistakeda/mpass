@@ -10,6 +10,7 @@ service MpassService {
   rpc SignUp(SignUpRequest) returns (SignUpResponse);
   rpc SignIn(SignInRequest) returns (SignInResponse);
   rpc AddRecords(AddRecordsRequest) returns (google.protobuf.Empty);
+  rpc AllRecords(google.protobuf.Empty) returns (AllRecordsResponse);
 }
 
 message SignUpRequest {
@@ -31,6 +32,10 @@ message SignInResponse {
 }
 
 message AddRecordsRequest {
+  repeated Record records = 1;
+}
+
+message AllRecordsResponse {
   repeated Record records = 1;
 }
 
