@@ -9,6 +9,7 @@ import (
 	"github.com/denistakeda/mpass/internal/config"
 	"github.com/denistakeda/mpass/internal/logging"
 	"github.com/denistakeda/mpass/proto"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
@@ -139,6 +140,44 @@ func Test_AddRecords(t *testing.T) {
 		})
 
 		assert.NoError(t, err)
+	})
+}
+
+func Test_AllRecords(t *testing.T) {
+	serverTest(t, "should require authentication", func(t *testing.T, c proto.MpassServiceClient) {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		_, err := c.AllRecords(ctx, &empty.Empty{})
+
+		assert.Error(t, err)
+		if err != nil {
+			e, ok := status.FromError(err)
+			assert.True(t, ok, "should return error with a status")
+			if ok {
+				assert.Equalf(t, codes.Unauthenticated, e.Code(), "should return Unauthenticated status code")
+			}
+		}
+	})
+
+	serverTest(t, "get the list of records", func(t *testing.T, c proto.MpassServiceClient) {
+		ctx := authorisedContext(t, c, "login", "password")
+
+		records := []*proto.Record{
+			loginPasswordRecord, textRecord, binaryRecord, bankCardRecord,
+		}
+
+		_, err := c.AddRecords(ctx, &proto.AddRecordsRequest{
+			Records: records,
+		})
+
+		assert.NoError(t, err)
+
+		resp, err := c.AllRecords(ctx, &empty.Empty{})
+
+		assert.NoError(t, err)
+
+		assert.Subsetf(t, resp.Records, records, "should have all the posted records")
 	})
 }
 

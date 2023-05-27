@@ -39,6 +39,7 @@ type (
 
 	recordService interface {
 		AddRecords(ctx context.Context, login string, records []record.Record) error
+		AllRecords(ctx context.Context, login string) ([]record.Record, error)
 	}
 )
 
@@ -131,10 +132,27 @@ func (s *server) AddRecords(ctx context.Context, req *pb.AddRecordsRequest) (*em
 	if err := s.recordService.AddRecords(ctx, user.Login, toDomainRecords(req.Records)); err != nil {
 		msg := fmt.Sprintf("failed to store records for user %q", user.Login)
 		s.logger.Error().Err(err).Msg(msg)
-		return &empty.Empty{}, status.Errorf(codes.Internal, msg)
+		return nil, status.Errorf(codes.Internal, msg)
 	}
 
 	return &empty.Empty{}, nil
+}
+
+func (s *server) AllRecords(ctx context.Context, _ *empty.Empty) (*pb.AllRecordsResponse, error) {
+	user, ok := ctx.Value(userKey).(domain.User)
+	if !ok {
+		return nil, status.Errorf(codes.Unauthenticated, "user is not authenticated")
+	}
+
+	recs, err := s.recordService.AllRecords(ctx, user.Login)
+
+	if err != nil {
+		msg := fmt.Sprintf("failed to get records for user %q", user.Login)
+		s.logger.Error().Err(err).Msg(msg)
+		return nil, status.Errorf(codes.Internal, msg)
+	}
+
+	return &pb.AllRecordsResponse{Records: toProtoRecords(recs)}, nil
 }
 
 // authFunc is used by a middleware to authenticate requests
@@ -157,6 +175,16 @@ func toDomainRecords(recs []*pb.Record) []record.Record {
 
 	for _, rec := range recs {
 		res = append(res, record.FromProto(rec))
+	}
+
+	return res
+}
+
+func toProtoRecords(recs []record.Record) []*pb.Record {
+	res := make([]*pb.Record, 0, len(recs))
+
+	for _, rec := range recs {
+		res = append(res, rec.ToProto())
 	}
 
 	return res

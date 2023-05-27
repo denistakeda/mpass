@@ -27,7 +27,7 @@ func (r *recordStore) getStore(login string) *store {
 // -- Store --
 
 type store struct {
-	mx      sync.RWMutex
+	mx      sync.Mutex
 	records map[string]*record.Record
 }
 
