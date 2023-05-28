@@ -17,6 +17,7 @@ type (
 
 	recordStore interface {
 		AddRecords(ctx context.Context, login string, records []record.Record) error
+		AllRecords(ctx context.Context, login string) ([]record.Record, error)
 	}
 )
 
@@ -35,4 +36,13 @@ func (r *recordService) AddRecords(ctx context.Context, login string, records []
 	r.logger.Info().Str("login", login).Msgf("%d records were sucessfully stored", len(records))
 
 	return nil
+}
+
+func (r *recordService) AllRecords(ctx context.Context, login string) ([]record.Record, error) {
+	records, err := r.recordStore.AllRecords(ctx, login)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to fetch records")
+	}
+
+	return records, nil
 }

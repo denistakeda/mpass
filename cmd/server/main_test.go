@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/denistakeda/mpass/internal/config"
+	"github.com/denistakeda/mpass/internal/domain/record"
 	"github.com/denistakeda/mpass/internal/logging"
 	"github.com/denistakeda/mpass/proto"
 	empty "github.com/golang/protobuf/ptypes/empty"
@@ -22,7 +23,7 @@ import (
 
 var (
 	loginPasswordRecord = &proto.Record{
-		Id:             "123",
+		Id:             "1",
 		LastUpdateDate: timestamppb.Now(),
 
 		Record: &proto.Record_LoginPasswordRecord{
@@ -34,7 +35,7 @@ var (
 	}
 
 	textRecord = &proto.Record{
-		Id:             "456",
+		Id:             "2",
 		LastUpdateDate: timestamppb.Now(),
 
 		Record: &proto.Record_TextRecord{
@@ -43,7 +44,7 @@ var (
 	}
 
 	binaryRecord = &proto.Record{
-		Id:             "456",
+		Id:             "3",
 		LastUpdateDate: timestamppb.Now(),
 
 		Record: &proto.Record_BinaryRecord{
@@ -52,7 +53,7 @@ var (
 	}
 
 	bankCardRecord = &proto.Record{
-		Id:             "456",
+		Id:             "4",
 		LastUpdateDate: timestamppb.Now(),
 
 		Record: &proto.Record_BankCardRecord{
@@ -177,7 +178,7 @@ func Test_AllRecords(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		assert.Subsetf(t, resp.Records, records, "should have all the posted records")
+		compareRecords(t, records, resp.Records, "store should include subset")
 	})
 }
 
@@ -223,4 +224,18 @@ func authorisedContext(t *testing.T, c proto.MpassServiceClient, login, password
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
 	return ctx
+}
+
+func compareRecords(t *testing.T, subset []*proto.Record, store []*proto.Record, label string) {
+	recStore := make([]record.Record, len(store))
+	for idx, item := range store {
+		recStore[idx] = record.FromProto(item)
+	}
+
+	recSubset := make([]record.Record, len(subset))
+	for idx, item := range store {
+		recSubset[idx] = record.FromProto(item)
+	}
+
+	assert.Subset(t, recStore, recSubset, label)
 }

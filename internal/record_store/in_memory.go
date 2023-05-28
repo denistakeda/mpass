@@ -19,6 +19,10 @@ func (r *recordStore) AddRecords(ctx context.Context, login string, records []re
 	return r.getStore(login).addRecords(records)
 }
 
+func (r *recordStore) AllRecords(ctx context.Context, login string) ([]record.Record, error) {
+	return r.getStore(login).allRecords(), nil
+}
+
 func (r *recordStore) getStore(login string) *store {
 	s, _ := r.stores.LoadOrStore(login, newStore())
 	return s.(*store)
@@ -28,11 +32,11 @@ func (r *recordStore) getStore(login string) *store {
 
 type store struct {
 	mx      sync.Mutex
-	records map[string]*record.Record
+	records map[string]record.Record
 }
 
 func newStore() *store {
-	return &store{records: make(map[string]*record.Record)}
+	return &store{records: make(map[string]record.Record)}
 }
 
 func (s *store) addRecords(records []record.Record) error {
@@ -41,10 +45,22 @@ func (s *store) addRecords(records []record.Record) error {
 
 	for _, rec := range records {
 		oldRec, ok := s.records[rec.GetId()]
-		if !ok || rec.GetLastUpdateDate().After((*oldRec).GetLastUpdateDate()) {
-			s.records[rec.GetId()] = &rec
+		if !ok || rec.GetLastUpdateDate().After((oldRec).GetLastUpdateDate()) {
+			s.records[rec.GetId()] = rec
 		}
 	}
 
 	return nil
+}
+
+func (s *store) allRecords() []record.Record {
+	s.mx.Lock()
+	defer s.mx.Unlock()
+
+	res := make([]record.Record, 0, len(s.records))
+	for _, rec := range s.records {
+		res = append(res, rec)
+	}
+
+	return res
 }

@@ -171,20 +171,20 @@ func (s *server) authFunc(ctx context.Context) (context.Context, error) {
 }
 
 func toDomainRecords(recs []*pb.Record) []record.Record {
-	res := make([]record.Record, 0, len(recs))
+	res := make([]record.Record, len(recs))
 
-	for _, rec := range recs {
-		res = append(res, record.FromProto(rec))
+	for idx, rec := range recs {
+		res[idx] = record.FromProto(rec)
 	}
 
 	return res
 }
 
 func toProtoRecords(recs []record.Record) []*pb.Record {
-	res := make([]*pb.Record, 0, len(recs))
+	res := make([]*pb.Record, len(recs))
 
-	for _, rec := range recs {
-		res = append(res, rec.ToProto())
+	for idx, rec := range recs {
+		res[idx] = rec.ToProto()
 	}
 
 	return res
