@@ -2,7 +2,6 @@ package auth_service
 
 import (
 	"context"
-	"time"
 
 	"github.com/denistakeda/mpass/internal/domain"
 	"github.com/denistakeda/mpass/internal/ports"
