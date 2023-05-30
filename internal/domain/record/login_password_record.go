@@ -17,6 +17,16 @@ type loginPasswordRecord struct {
 	password string
 }
 
+func NewLoginPasswordRecord(login, password string) *loginPasswordRecord {
+	return &loginPasswordRecord{
+		id:             login,
+		lastUpdateDate: time.Now(),
+
+		login:    login,
+		password: password,
+	}
+}
+
 func loginPasswordRecordFromProto(id string, lastUpdateDate time.Time, p *proto.LoginPasswordRecord) *loginPasswordRecord {
 	return &loginPasswordRecord{
 		id:             id,
