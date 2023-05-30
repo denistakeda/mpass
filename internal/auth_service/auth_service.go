@@ -101,8 +101,7 @@ func (a *authService) generateJWT(login string) (string, error) {
 	// Create a new token object, specifying signing method and the claims
 	// you would like it to contain.
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"login":      login,
-		"created_at": time.Now().Unix(),
+		"login": login,
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
