@@ -8,13 +8,14 @@ import (
 	"flag"
 	"os"
 
+	"github.com/caarlos0/env/v6"
 	"github.com/pkg/errors"
 )
 
 // Config includes all the configuration options for the server.
 type Config struct {
-	Host   string `json:"host"`
-	Secret string `json:"secret"`
+	Host   string `json:"host" env:"HOST"`
+	Secret string `json:"secret" env:"SECRET"`
 }
 
 // ParseServerCfg reads the configuration either from "config" flag or from the "CONFIG_JSON" env variable
@@ -29,6 +30,10 @@ func ParseServerCfg() (Config, error) {
 	err = json.Unmarshal([]byte(content), &conf)
 	if err != nil {
 		return conf, errors.Wrap(err, "failed to unmarshal the configuration")
+	}
+
+	if err := env.Parse(&conf); err != nil {
+		return Config{}, errors.Wrap(err, "failed to parse server configuration from the environment variables")
 	}
 
 	return conf, nil
