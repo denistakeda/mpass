@@ -69,6 +69,8 @@ func New(params NewClientParams) *cli.App {
 								return errors.New("login was not provided")
 							}
 
+							params.Printer.Printf("Enter your password for login %q: ", login)
+
 							password, err := params.Scanner.Readln()
 							if err != nil {
 								return errors.New("failed to read password")
