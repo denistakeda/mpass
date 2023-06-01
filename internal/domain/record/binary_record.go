@@ -50,6 +50,6 @@ func (r *binaryRecord) ToProto() *proto.Record {
 }
 
 // ProvideToClient implements Record
-func (*binaryRecord) ProvideToClient(printer printer) {
+func (*binaryRecord) ProvideToClient(printer printer) error {
 	panic("unimplemented")
 }

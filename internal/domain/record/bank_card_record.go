@@ -24,6 +24,18 @@ type bankCardRecord struct {
 	Code       uint
 }
 
+func NewBankCardRecord(cardNumber string, month time.Month, day uint32, code uint) *bankCardRecord {
+	return &bankCardRecord{
+		ID:             cardNumber,
+		LastUpdateDate: time.Now(),
+
+		CardNumber: cardNumber,
+		Month:      month,
+		Day:        day,
+		Code:       code,
+	}
+}
+
 func bankCardRecordFromProto(id string, lastUpdateDate time.Time, p *proto.BankCardRecord) *bankCardRecord {
 	return &bankCardRecord{
 		ID:             id,
@@ -60,6 +72,7 @@ func (r *bankCardRecord) ToProto() *proto.Record {
 	}
 }
 
-func (r *bankCardRecord) ProvideToClient(printer printer) {
+func (r *bankCardRecord) ProvideToClient(printer printer) error {
 	printer.Printf("Card Number: %s\nDate: %d/%d   Code: %s", r.CardNumber, r.Month, r.Day, r.Code)
+	return nil
 }

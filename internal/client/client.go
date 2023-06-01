@@ -1,6 +1,8 @@
 package client
 
 import (
+	"time"
+
 	"github.com/denistakeda/mpass/internal/domain/record"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
@@ -69,17 +71,50 @@ func New(params NewClientParams) *cli.App {
 								return errors.New("login was not provided")
 							}
 
-							params.Printer.Printf("Enter your password for login %q: ", login)
-
-							password, err := params.Scanner.Readln()
+							password, err := newParamReader(params.Printer, params.Scanner, "Password").
+								String().
+								StripWhitespaces(true).
+								NotEmpty(true).
+								Read()
 							if err != nil {
-								return errors.New("failed to read password")
-							}
-							if password == "" {
-								return errors.New("password should not be empty")
+								return err
 							}
 
 							rec := record.NewLoginPasswordRecord(login, password)
+
+							return params.ClientService.SetRecord(rec)
+						},
+					},
+					{
+						Name:        "card",
+						Usage:       "mpass set card",
+						Description: "add the bank card to the store",
+						Action: func(cCtx *cli.Context) error {
+							cardNumber, err := newParamReader(params.Printer, params.Scanner, "Card Number").
+								String().
+								StripWhitespaces(true).
+								NotEmpty(true).
+								Read()
+							if err != nil {
+								return err
+							}
+
+							month, err := newParamReader(params.Printer, params.Scanner, "Month").Month().Read()
+							if err != nil {
+								return err
+							}
+
+							day, err := newParamReader(params.Printer, params.Scanner, "Day").Day().Read()
+							if err != nil {
+								return err
+							}
+
+							cardCode, err := newParamReader(params.Printer, params.Scanner, "Card Code").NumRange(1, 999).Read()
+							if err != nil {
+								return err
+							}
+
+							rec := record.NewBankCardRecord(cardNumber, time.Month(month), uint32(day), uint(cardCode))
 
 							return params.ClientService.SetRecord(rec)
 						},
@@ -101,7 +136,10 @@ func New(params NewClientParams) *cli.App {
 						return err
 					}
 
-					rec.ProvideToClient(params.Printer)
+					err = rec.ProvideToClient(params.Printer)
+					if err != nil {
+						return err
+					}
 
 					return nil
 				},

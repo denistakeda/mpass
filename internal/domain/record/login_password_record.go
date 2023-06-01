@@ -69,6 +69,7 @@ func (r *loginPasswordRecord) ToProto() *proto.Record {
 }
 
 // ProvideToClient implements Record
-func (r *loginPasswordRecord) ProvideToClient(printer printer) {
+func (r *loginPasswordRecord) ProvideToClient(printer printer) error {
 	printer.Printf("Password: %s\n", r.Password)
+	return nil
 }

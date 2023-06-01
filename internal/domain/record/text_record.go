@@ -50,6 +50,6 @@ func (r *textRecord) ToProto() *proto.Record {
 }
 
 // ProvideToClient implements Record
-func (*textRecord) ProvideToClient(printer printer) {
+func (*textRecord) ProvideToClient(printer printer) error {
 	panic("unimplemented")
 }

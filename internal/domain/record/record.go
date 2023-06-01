@@ -11,7 +11,7 @@ type Record interface {
 	GetLastUpdateDate() time.Time
 	ToProto() *proto.Record
 
-	ProvideToClient(printer printer)
+	ProvideToClient(printer printer) error
 }
 
 type printer interface {
