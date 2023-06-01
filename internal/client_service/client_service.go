@@ -12,6 +12,7 @@ type (
 
 	clientStorage interface {
 		SetRecord(record.Record) error
+		GetRecord(string) (record.Record, error)
 	}
 )
 
@@ -25,4 +26,13 @@ func (c *clientService) SetRecord(r record.Record) error {
 	}
 
 	return nil
+}
+
+func (c *clientService) GetRecord(key string) (record.Record, error) {
+	rec, err := c.clientStorage.GetRecord(key)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get record %q", key)
+	}
+
+	return rec, nil
 }

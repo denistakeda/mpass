@@ -1,6 +1,7 @@
 package record
 
 import (
+	"encoding/gob"
 	"time"
 
 	"github.com/denistakeda/mpass/proto"
@@ -9,48 +10,56 @@ import (
 
 var _ Record = (*bankCardRecord)(nil)
 
-type bankCardRecord struct {
-	id             string
-	lastUpdateDate time.Time
+func init() {
+	gob.Register(&bankCardRecord{})
+}
 
-	cardCode string
-	month    time.Month
-	day      uint32
-	code     uint
+type bankCardRecord struct {
+	ID             string
+	LastUpdateDate time.Time
+
+	CardNumber string
+	Month      time.Month
+	Day        uint32
+	Code       uint
 }
 
 func bankCardRecordFromProto(id string, lastUpdateDate time.Time, p *proto.BankCardRecord) *bankCardRecord {
 	return &bankCardRecord{
-		id:             id,
-		lastUpdateDate: lastUpdateDate,
+		ID:             id,
+		LastUpdateDate: lastUpdateDate,
 
-		cardCode: p.CardCode,
-		month:    time.Month(p.Month),
-		day:      p.Day,
-		code:     uint(p.Code),
+		CardNumber: p.CardCode,
+		Month:      time.Month(p.Month),
+		Day:        p.Day,
+		Code:       uint(p.Code),
 	}
 }
 
 func (r *bankCardRecord) GetId() string {
-	return r.id
+	return r.ID
 }
 
 func (r *bankCardRecord) GetLastUpdateDate() time.Time {
-	return r.lastUpdateDate
+	return r.LastUpdateDate
 }
 
 func (r *bankCardRecord) ToProto() *proto.Record {
 	return &proto.Record{
-		Id:             r.id,
-		LastUpdateDate: timestamppb.New(r.lastUpdateDate),
+		Id:             r.ID,
+		LastUpdateDate: timestamppb.New(r.LastUpdateDate),
 
 		Record: &proto.Record_BankCardRecord{
 			BankCardRecord: &proto.BankCardRecord{
-				CardCode: r.cardCode,
-				Month:    uint32(r.month),
-				Day:      r.day,
-				Code:     uint32(r.code),
+				CardCode: r.CardNumber,
+				Month:    uint32(r.Month),
+				Day:      r.Day,
+				Code:     uint32(r.Code),
 			},
 		},
 	}
+}
+
+func (r *bankCardRecord) ProvideToClient(printer printer) {
+	printer.Printf("Card Number: %s\nDate: %d/%d   Code: %s", r.CardNumber, r.Month, r.Day, r.Code)
 }

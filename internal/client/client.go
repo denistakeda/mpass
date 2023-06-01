@@ -15,6 +15,7 @@ type (
 	}
 	clientService interface {
 		SetRecord(record.Record) error
+		GetRecord(string) (record.Record, error)
 	}
 )
 
@@ -56,8 +57,7 @@ func New(params NewClientParams) *cli.App {
 			// 	},
 			// },
 			{
-				Name:  "set",
-				Usage: "set the value to the database database",
+				Name: "set",
 				Subcommands: []*cli.Command{
 					{
 						Name:        "password",
@@ -84,6 +84,26 @@ func New(params NewClientParams) *cli.App {
 							return params.ClientService.SetRecord(rec)
 						},
 					},
+				},
+			},
+			{
+				Name:        "get",
+				Usage:       "mpass get <key>",
+				Description: "gets the value by key from the local database",
+				Action: func(cCtx *cli.Context) error {
+					key := cCtx.Args().First()
+					if key == "" {
+						return errors.New("key is not provided")
+					}
+
+					rec, err := params.ClientService.GetRecord(key)
+					if err != nil {
+						return err
+					}
+
+					rec.ProvideToClient(params.Printer)
+
+					return nil
 				},
 			},
 		},

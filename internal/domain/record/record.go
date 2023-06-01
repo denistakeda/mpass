@@ -10,6 +10,12 @@ type Record interface {
 	GetId() string
 	GetLastUpdateDate() time.Time
 	ToProto() *proto.Record
+
+	ProvideToClient(printer printer)
+}
+
+type printer interface {
+	Printf(format string, a ...any)
 }
 
 func FromProto(rec *proto.Record) Record {

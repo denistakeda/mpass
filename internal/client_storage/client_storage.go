@@ -17,8 +17,8 @@ type (
 	}
 
 	state struct {
-		records map[string]record.Record
-		toSync  map[string]record.Record
+		Records map[string]record.Record
+		ToSync  map[string]record.Record
 	}
 )
 
@@ -35,19 +35,42 @@ func (c *clientStorage) SetRecord(r record.Record) error {
 		return err
 	}
 
-	state.records[r.GetId()] = r
-	state.toSync[r.GetId()] = r
+	state.Records[r.GetId()] = r
+	state.ToSync[r.GetId()] = r
 
 	return nil
 }
 
+func (c *clientStorage) GetRecord(key string) (record.Record, error) {
+	c.mx.Lock()
+	defer c.mx.Unlock()
+
+	state, err := c.getState()
+	if err != nil {
+		return nil, err
+	}
+
+	rec, ok := state.Records[key]
+	if !ok {
+		return nil, errors.Errorf("no record with key %q", key)
+	}
+
+	return rec, nil
+}
+
 func (c *clientStorage) Close() error {
+	// only store the state if it was loaded before
+	if c.state == nil {
+		return nil
+	}
+
 	file, err := os.Create(c.filepath)
 	if err != nil {
 		return errors.Wrapf(err, "failed to open file %q for writing", c.filepath)
 	}
 	defer file.Close()
 
+	gob.Register(map[string]record.Record{})
 	encoder := gob.NewEncoder(file)
 	err = encoder.Encode(c.state)
 	if err != nil {
@@ -68,8 +91,8 @@ func (c *clientStorage) getState() (*state, error) {
 
 func (c *clientStorage) loadStateFromFile() error {
 	c.state = &state{
-		records: make(map[string]record.Record),
-		toSync:  make(map[string]record.Record),
+		Records: make(map[string]record.Record),
+		ToSync:  make(map[string]record.Record),
 	}
 
 	file, err := os.Open(c.filepath)

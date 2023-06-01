@@ -1,6 +1,7 @@
 package record
 
 import (
+	"encoding/gob"
 	"time"
 
 	"github.com/denistakeda/mpass/proto"
@@ -9,37 +10,46 @@ import (
 
 var _ Record = (*binaryRecord)(nil)
 
-type binaryRecord struct {
-	id             string
-	lastUpdateDate time.Time
+func init() {
+	gob.Register(&binaryRecord{})
+}
 
-	binary []byte
+type binaryRecord struct {
+	ID             string
+	LastUpdateDate time.Time
+
+	Binary []byte
 }
 
 func binaryRecordFromProto(id string, lastUpdateDate time.Time, p *proto.BinaryRecord) *binaryRecord {
 	return &binaryRecord{
-		id:             id,
-		lastUpdateDate: lastUpdateDate,
+		ID:             id,
+		LastUpdateDate: lastUpdateDate,
 
-		binary: p.Binary,
+		Binary: p.Binary,
 	}
 }
 
 func (r *binaryRecord) GetId() string {
-	return r.id
+	return r.ID
 }
 
 func (r *binaryRecord) GetLastUpdateDate() time.Time {
-	return r.lastUpdateDate
+	return r.LastUpdateDate
 }
 
 func (r *binaryRecord) ToProto() *proto.Record {
 	return &proto.Record{
-		Id:             r.id,
-		LastUpdateDate: timestamppb.New(r.lastUpdateDate),
+		Id:             r.ID,
+		LastUpdateDate: timestamppb.New(r.LastUpdateDate),
 
 		Record: &proto.Record_BinaryRecord{
-			BinaryRecord: &proto.BinaryRecord{Binary: r.binary},
+			BinaryRecord: &proto.BinaryRecord{Binary: r.Binary},
 		},
 	}
+}
+
+// ProvideToClient implements Record
+func (*binaryRecord) ProvideToClient(printer printer) {
+	panic("unimplemented")
 }

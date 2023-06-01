@@ -1,6 +1,7 @@
 package record
 
 import (
+	"encoding/gob"
 	"time"
 
 	"github.com/denistakeda/mpass/proto"
@@ -9,52 +10,65 @@ import (
 
 var _ Record = (*loginPasswordRecord)(nil)
 
-type loginPasswordRecord struct {
-	id             string
-	lastUpdateDate time.Time
+func init() {
+	gob.Register(&binaryRecord{})
+}
 
-	login    string
-	password string
+func init() {
+	gob.Register(&loginPasswordRecord{})
+}
+
+type loginPasswordRecord struct {
+	ID             string
+	LastUpdateDate time.Time
+
+	Login    string
+	Password string
 }
 
 func NewLoginPasswordRecord(login, password string) *loginPasswordRecord {
 	return &loginPasswordRecord{
-		id:             login,
-		lastUpdateDate: time.Now(),
+		ID:             login,
+		LastUpdateDate: time.Now(),
 
-		login:    login,
-		password: password,
+		Login:    login,
+		Password: password,
 	}
 }
 
 func loginPasswordRecordFromProto(id string, lastUpdateDate time.Time, p *proto.LoginPasswordRecord) *loginPasswordRecord {
 	return &loginPasswordRecord{
-		id:             id,
-		lastUpdateDate: lastUpdateDate,
+		ID:             id,
+		LastUpdateDate: lastUpdateDate,
 
-		login:    p.Login,
-		password: p.Password,
+		Login:    p.Login,
+		Password: p.Password,
 	}
 }
 
 func (r *loginPasswordRecord) GetId() string {
-	return r.id
+	return r.ID
 }
 
 func (r *loginPasswordRecord) GetLastUpdateDate() time.Time {
-	return r.lastUpdateDate
+	return r.LastUpdateDate
 }
 
 func (r *loginPasswordRecord) ToProto() *proto.Record {
 	return &proto.Record{
-		Id:             r.id,
-		LastUpdateDate: timestamppb.New(r.lastUpdateDate),
+		Id:             r.ID,
+		LastUpdateDate: timestamppb.New(r.LastUpdateDate),
 
 		Record: &proto.Record_LoginPasswordRecord{
 			LoginPasswordRecord: &proto.LoginPasswordRecord{
-				Login:    r.login,
-				Password: r.password,
+				Login:    r.Login,
+				Password: r.Password,
 			},
 		},
 	}
+}
+
+// ProvideToClient implements Record
+func (r *loginPasswordRecord) ProvideToClient(printer printer) {
+	printer.Printf("Password: %s\n", r.Password)
 }
