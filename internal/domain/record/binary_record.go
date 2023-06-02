@@ -21,6 +21,15 @@ type binaryRecord struct {
 	Binary []byte
 }
 
+func NewBinaryRecord(key string, data []byte) *binaryRecord {
+	return &binaryRecord{
+		ID:             key,
+		LastUpdateDate: time.Now(),
+
+		Binary: data,
+	}
+}
+
 func binaryRecordFromProto(id string, lastUpdateDate time.Time, p *proto.BinaryRecord) *binaryRecord {
 	return &binaryRecord{
 		ID:             id,

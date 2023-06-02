@@ -1,6 +1,7 @@
 package client
 
 import (
+	"io/ioutil"
 	"time"
 
 	"github.com/denistakeda/mpass/internal/domain/record"
@@ -122,7 +123,7 @@ func New(params NewClientParams) *cli.App {
 					{
 						Name:        "text",
 						Usage:       "mpass set text <key>",
-						Description: "add the text to the store",
+						Description: "add the text to the store with defined key",
 						Action: func(cCtx *cli.Context) error {
 							key := cCtx.Args().First()
 							if key == "" {
@@ -139,6 +140,31 @@ func New(params NewClientParams) *cli.App {
 							}
 
 							rec := record.NewTextRecord(key, text)
+
+							return params.ClientService.SetRecord(rec)
+						},
+					},
+					{
+						Name:        "file",
+						Usage:       "mpass set file <key> <file_path>",
+						Description: "add the file to the store with defined key",
+						Action: func(cCtx *cli.Context) error {
+							key := cCtx.Args().First()
+							if key == "" {
+								return errors.New("key was not provided")
+							}
+
+							filePath := cCtx.Args().Get(1)
+							if filePath == "" {
+								return errors.New("file_path was not provided")
+							}
+
+							data, err := ioutil.ReadFile(filePath)
+							if err != nil {
+								return errors.Wrapf(err, "failed to read file %q", filePath)
+							}
+
+							rec := record.NewBinaryRecord(key, data)
 
 							return params.ClientService.SetRecord(rec)
 						},
