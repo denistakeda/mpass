@@ -1,9 +1,16 @@
 package client_service
 
 import (
+	"context"
+	"time"
+
 	"github.com/denistakeda/mpass/internal/domain/record"
 	"github.com/denistakeda/mpass/proto"
 	"github.com/pkg/errors"
+)
+
+var (
+	signUpTimeout = 5 * time.Second
 )
 
 type (
@@ -15,6 +22,7 @@ type (
 	clientStorage interface {
 		SetRecord(record.Record) error
 		GetRecord(string) (record.Record, error)
+		SetToken(string) error
 	}
 
 	grpcClient interface {
@@ -41,4 +49,21 @@ func (c *clientService) GetRecord(key string) (record.Record, error) {
 	}
 
 	return rec, nil
+}
+
+func (c *clientService) RegisterUser(login, password string) error {
+	client, err := c.grpcClient.GetClient()
+	if err != nil {
+		return errors.Wrapf(err, "failed to register user %q", login)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), signUpTimeout)
+	defer cancel()
+
+	resp, err := client.SignUp(ctx, &proto.SignUpRequest{Login: login, Password: password})
+	if err != nil {
+		return errors.Wrapf(err, "failed to request user registration for user %q", login)
+	}
+
+	return c.clientStorage.SetToken(resp.Token)
 }

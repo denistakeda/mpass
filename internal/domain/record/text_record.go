@@ -60,4 +60,5 @@ func (r *textRecord) ToProto() *proto.Record {
 
 func (r *textRecord) ProvideToClient(printer printer) error {
 	printer.Printf("Text:\n %s", r.Text)
+	return nil
 }

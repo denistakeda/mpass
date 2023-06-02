@@ -19,6 +19,7 @@ type (
 	clientService interface {
 		SetRecord(record.Record) error
 		GetRecord(string) (record.Record, error)
+		RegisterUser(login, password string) error
 	}
 )
 
@@ -31,13 +32,35 @@ type NewClientParams struct {
 func New(params NewClientParams) *cli.App {
 	return &cli.App{
 		Commands: []*cli.Command{
-			// {
-			// 	Name:  "sync",
-			// 	Usage: "sync local database with server",
-			// 	Action: func(cCtx *cli.Context) error {
-			// 		panic("implement")
-			// 	},
-			// },
+			{
+				Name:        "register",
+				Usage:       "mpass register <login>",
+				Description: "register to the mpass server",
+				Action: func(cCtx *cli.Context) error {
+					login := cCtx.Args().First()
+					if login == "" {
+						return errors.New("login was not provided")
+					}
+
+					password, err := newParamReader(params.Printer, params.Scanner, "Password").
+						String().
+						StripWhitespaces(false).
+						NotEmpty(true).
+						Read()
+					if err != nil {
+						return err
+					}
+
+					err = params.ClientService.RegisterUser(login, password)
+					if err != nil {
+						return err
+					}
+
+					params.Printer.Printf("user %q was successfully registered\n", login)
+
+					return nil
+				},
+			},
 			// {
 			// 	Name:  "login",
 			// 	Usage: "login to the server",
@@ -46,15 +69,8 @@ func New(params NewClientParams) *cli.App {
 			// 	},
 			// },
 			// {
-			// 	Name:  "register",
-			// 	Usage: "register a new user on the server",
-			// 	Action: func(cCtx *cli.Context) error {
-			// 		panic("implement")
-			// 	},
-			// },
-			// {
-			// 	Name:  "get",
-			// 	Usage: "get key from database",
+			// 	Name:  "sync",
+			// 	Usage: "sync local database with server",
 			// 	Action: func(cCtx *cli.Context) error {
 			// 		panic("implement")
 			// 	},

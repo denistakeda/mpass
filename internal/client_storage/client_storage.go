@@ -17,6 +17,8 @@ type (
 	}
 
 	state struct {
+		Token string
+
 		Records map[string]record.Record
 		ToSync  map[string]record.Record
 	}
@@ -24,6 +26,20 @@ type (
 
 func New(filepath string) *clientStorage {
 	return &clientStorage{filepath: filepath}
+}
+
+func (c *clientStorage) SetToken(t string) error {
+	c.mx.Lock()
+	defer c.mx.Unlock()
+
+	state, err := c.getState()
+	if err != nil {
+		return err
+	}
+
+	state.Token = t
+
+	return nil
 }
 
 func (c *clientStorage) SetRecord(r record.Record) error {

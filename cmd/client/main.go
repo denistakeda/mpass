@@ -17,7 +17,7 @@ import (
 func main() {
 	homeFolder := fmt.Sprintf("%s/.mpass/", os.Getenv("HOME"))
 	statePath := fmt.Sprintf("%s/state.gob", homeFolder)
-	configPath := fmt.Sprint("%s/config.json", homeFolder)
+	configPath := fmt.Sprintf("%s/config.json", homeFolder)
 
 	conf, err := config.ParseClientCfg(configPath)
 	if err != nil {
@@ -25,6 +25,7 @@ func main() {
 	}
 
 	grpcClient := grpc_client.New(conf.Address)
+	defer grpcClient.Close()
 
 	clientStorage := client_storage.New(statePath)
 	defer clientStorage.Close()
