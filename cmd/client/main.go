@@ -8,12 +8,20 @@ import (
 	"github.com/denistakeda/mpass/internal/client"
 	"github.com/denistakeda/mpass/internal/client_service"
 	"github.com/denistakeda/mpass/internal/client_storage"
+	"github.com/denistakeda/mpass/internal/config"
 	"github.com/denistakeda/mpass/internal/printer"
 	"github.com/denistakeda/mpass/internal/scanner"
 )
 
 func main() {
-	statePath := fmt.Sprintf("%s/.mpass/state.gob", os.Getenv("HOME"))
+	homeFolder := fmt.Sprintf("%s/.mpass/", os.Getenv("HOME"))
+	statePath := fmt.Sprintf("%s/state.gob", homeFolder)
+	configPath := fmt.Sprint("%s/config.json", homeFolder)
+
+	conf, err := config.ParseClientCfg(configPath)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	clientStorage := client_storage.New(statePath)
 	defer clientStorage.Close()

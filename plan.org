@@ -1,9 +1,15 @@
 #+title: Plan
 
-* Server [2/4]
+* Server [3/4]
 ** DONE Create configuration
 ** TODO Create a docker file
 ** DONE Create a protobuf spec [2/2]
 *** DONE Create spec and generate types
 *** DONE Create a script for later generation
-** TODO Sign-up, sign-in mechanism
+** DONE Sign-up, sign-in mechanism
+* Client [0/5]
+** TODO Reading the file record
+** TODO Copy to clipboard
+** TODO Syncronization
+** TODO User creation
+** TODO User login
