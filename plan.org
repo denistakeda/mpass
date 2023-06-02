@@ -7,9 +7,9 @@
 *** DONE Create spec and generate types
 *** DONE Create a script for later generation
 ** DONE Sign-up, sign-in mechanism
-* Client [0/5]
+* Client [3/5]
 ** TODO Reading the file record
 ** TODO Copy to clipboard
-** TODO Syncronization
-** TODO User creation
-** TODO User login
+** DONE Syncronization
+** DONE User creation
+** DONE User login
