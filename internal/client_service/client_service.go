@@ -67,3 +67,20 @@ func (c *clientService) RegisterUser(login, password string) error {
 
 	return c.clientStorage.SetToken(resp.Token)
 }
+
+func (c *clientService) LoginUser(login, password string) error {
+	client, err := c.grpcClient.GetClient()
+	if err != nil {
+		return errors.Wrapf(err, "failed to login user %q", login)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), signUpTimeout)
+	defer cancel()
+
+	resp, err := client.SignIn(ctx, &proto.SignInRequest{Login: login, Password: password})
+	if err != nil {
+		return errors.Wrapf(err, "failed to request user login for user %q", login)
+	}
+
+	return c.clientStorage.SetToken(resp.Token)
+}

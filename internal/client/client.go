@@ -20,6 +20,7 @@ type (
 		SetRecord(record.Record) error
 		GetRecord(string) (record.Record, error)
 		RegisterUser(login, password string) error
+		LoginUser(login, password string) error
 	}
 )
 
@@ -61,13 +62,35 @@ func New(params NewClientParams) *cli.App {
 					return nil
 				},
 			},
-			// {
-			// 	Name:  "login",
-			// 	Usage: "login to the server",
-			// 	Action: func(cCtx *cli.Context) error {
-			// 		panic("implement")
-			// 	},
-			// },
+			{
+				Name:        "login",
+				Usage:       "mpass login <login>",
+				Description: "login to the mpass server",
+				Action: func(cCtx *cli.Context) error {
+					login := cCtx.Args().First()
+					if login == "" {
+						return errors.New("login was not provided")
+					}
+
+					password, err := newParamReader(params.Printer, params.Scanner, "Password").
+						String().
+						StripWhitespaces(false).
+						NotEmpty(true).
+						Read()
+					if err != nil {
+						return err
+					}
+
+					err = params.ClientService.LoginUser(login, password)
+					if err != nil {
+						return err
+					}
+
+					params.Printer.Printf("user %q was successfully logged in\n", login)
+
+					return nil
+				},
+			},
 			// {
 			// 	Name:  "sync",
 			// 	Usage: "sync local database with server",
