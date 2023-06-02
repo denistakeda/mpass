@@ -119,6 +119,30 @@ func New(params NewClientParams) *cli.App {
 							return params.ClientService.SetRecord(rec)
 						},
 					},
+					{
+						Name:        "text",
+						Usage:       "mpass set text <key>",
+						Description: "add the text to the store",
+						Action: func(cCtx *cli.Context) error {
+							key := cCtx.Args().First()
+							if key == "" {
+								return errors.New("key was not provided")
+							}
+
+							text, err := newParamReader(params.Printer, params.Scanner, "Text").
+								String().
+								StripWhitespaces(false).
+								NotEmpty(true).
+								Read()
+							if err != nil {
+								return err
+							}
+
+							rec := record.NewTextRecord(key, text)
+
+							return params.ClientService.SetRecord(rec)
+						},
+					},
 				},
 			},
 			{

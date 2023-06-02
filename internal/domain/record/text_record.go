@@ -21,6 +21,15 @@ type textRecord struct {
 	Text string
 }
 
+func NewTextRecord(key string, text string) *textRecord {
+	return &textRecord{
+		ID:             key,
+		LastUpdateDate: time.Now(),
+
+		Text: text,
+	}
+}
+
 func textRecordFromProto(id string, lastUpdateDate time.Time, p *proto.TextRecord) *textRecord {
 	return &textRecord{
 		ID:             id,
@@ -49,7 +58,6 @@ func (r *textRecord) ToProto() *proto.Record {
 	}
 }
 
-// ProvideToClient implements Record
-func (*textRecord) ProvideToClient(printer printer) error {
-	panic("unimplemented")
+func (r *textRecord) ProvideToClient(printer printer) error {
+	printer.Printf("Text:\n %s", r.Text)
 }
