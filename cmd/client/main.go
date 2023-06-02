@@ -9,6 +9,7 @@ import (
 	"github.com/denistakeda/mpass/internal/client_service"
 	"github.com/denistakeda/mpass/internal/client_storage"
 	"github.com/denistakeda/mpass/internal/config"
+	"github.com/denistakeda/mpass/internal/grpc_client"
 	"github.com/denistakeda/mpass/internal/printer"
 	"github.com/denistakeda/mpass/internal/scanner"
 )
@@ -23,10 +24,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	grpcClient := grpc_client.New(conf.Address)
+
 	clientStorage := client_storage.New(statePath)
 	defer clientStorage.Close()
 
-	clientService := client_service.New(clientStorage)
+	clientService := client_service.New(clientStorage, grpcClient)
 
 	printer := printer.New(os.Stdout, os.Stderr)
 	scanner := scanner.New(os.Stdin)

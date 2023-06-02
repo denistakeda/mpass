@@ -2,22 +2,28 @@ package client_service
 
 import (
 	"github.com/denistakeda/mpass/internal/domain/record"
+	"github.com/denistakeda/mpass/proto"
 	"github.com/pkg/errors"
 )
 
 type (
 	clientService struct {
 		clientStorage clientStorage
+		grpcClient    grpcClient
 	}
 
 	clientStorage interface {
 		SetRecord(record.Record) error
 		GetRecord(string) (record.Record, error)
 	}
+
+	grpcClient interface {
+		GetClient() (proto.MpassServiceClient, error)
+	}
 )
 
-func New(clientStorage clientStorage) *clientService {
-	return &clientService{clientStorage: clientStorage}
+func New(clientStorage clientStorage, grpcClient grpcClient) *clientService {
+	return &clientService{clientStorage: clientStorage, grpcClient: grpcClient}
 }
 
 func (c *clientService) SetRecord(r record.Record) error {
