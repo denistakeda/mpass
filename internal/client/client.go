@@ -21,6 +21,7 @@ type (
 		GetRecord(string) (record.Record, error)
 		RegisterUser(login, password string) error
 		LoginUser(login, password string) error
+		Sync() error
 	}
 )
 
@@ -91,13 +92,14 @@ func New(params NewClientParams) *cli.App {
 					return nil
 				},
 			},
-			// {
-			// 	Name:  "sync",
-			// 	Usage: "sync local database with server",
-			// 	Action: func(cCtx *cli.Context) error {
-			// 		panic("implement")
-			// 	},
-			// },
+			{
+				Name:        "sync",
+				Usage:       "mpass sync",
+				Description: "sync local and server database",
+				Action: func(cCtx *cli.Context) error {
+					return params.ClientService.Sync()
+				},
+			},
 			{
 				Name: "set",
 				Subcommands: []*cli.Command{

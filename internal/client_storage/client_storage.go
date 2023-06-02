@@ -28,6 +28,18 @@ func New(filepath string) *clientStorage {
 	return &clientStorage{filepath: filepath}
 }
 
+func (c *clientStorage) GetToken() (string, error) {
+	c.mx.Lock()
+	defer c.mx.Unlock()
+
+	state, err := c.getState()
+	if err != nil {
+		return "", err
+	}
+
+	return state.Token, nil
+}
+
 func (c *clientStorage) SetToken(t string) error {
 	c.mx.Lock()
 	defer c.mx.Unlock()
@@ -72,6 +84,42 @@ func (c *clientStorage) GetRecord(key string) (record.Record, error) {
 	}
 
 	return rec, nil
+}
+
+func (c *clientStorage) ItemsToSync() ([]record.Record, error) {
+	c.mx.Lock()
+	defer c.mx.Unlock()
+
+	state, err := c.getState()
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]record.Record, 0, len(state.ToSync))
+	for _, item := range state.ToSync {
+		res = append(res, item)
+	}
+
+	return res, nil
+}
+
+func (c *clientStorage) SyncRecords(records []record.Record) error {
+	c.mx.Lock()
+	defer c.mx.Unlock()
+
+	state, err := c.getState()
+	if err != nil {
+		return err
+	}
+
+	state.ToSync = make(map[string]record.Record)
+	state.Records = make(map[string]record.Record)
+
+	for _, item := range records {
+		state.Records[item.GetId()] = item
+	}
+
+	return nil
 }
 
 func (c *clientStorage) Close() error {
