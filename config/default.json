@@ -1,5 +1,5 @@
 {
     "host": ":3200",
-    "secret": "secret"
+    "secret": "secret",
     "database_uri": "postgresql://postgres:postgres@database:5432/postgres?sslmode=disable"
 }

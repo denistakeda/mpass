@@ -194,7 +194,11 @@ func serverTest(t *testing.T, description string, f func(*testing.T, proto.Mpass
 		Secret: "secret",
 	}
 
-	s := buildServer(conf, logService)
+	s := buildServer(buildParams{
+		conf:                conf,
+		logService:          logService,
+		useInMemoryStorages: true,
+	})
 	s.Start()
 	defer s.Stop()
 

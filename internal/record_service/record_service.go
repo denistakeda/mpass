@@ -9,19 +9,12 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type (
-	recordService struct {
-		logger      zerolog.Logger
-		recordStore recordStore
-	}
+type recordService struct {
+	logger      zerolog.Logger
+	recordStore ports.RecordStore
+}
 
-	recordStore interface {
-		AddRecords(ctx context.Context, login string, records []record.Record) error
-		AllRecords(ctx context.Context, login string) ([]record.Record, error)
-	}
-)
-
-func New(logService ports.LogService, recordStore recordStore) *recordService {
+func New(logService ports.LogService, recordStore ports.RecordStore) *recordService {
 	return &recordService{
 		logger:      logService.ComponentLogger("recordService"),
 		recordStore: recordStore,
