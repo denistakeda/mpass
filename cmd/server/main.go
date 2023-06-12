@@ -95,7 +95,7 @@ func makeStores(logger zerolog.Logger, databaseURI string, inMemory bool) (ports
 		}
 
 		// TODO: create the record store with DB
-		return user_store.NewWithDB(db), record_store.NewInMemory()
+		return user_store.NewWithDB(db), record_store.NewWithDb(db)
 	}
 }
 
