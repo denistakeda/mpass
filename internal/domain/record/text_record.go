@@ -15,10 +15,10 @@ func init() {
 }
 
 type textRecord struct {
-	ID             string
-	LastUpdateDate time.Time
+	ID             string    `db:"id"`
+	LastUpdateDate time.Time `db:"last_update_date"`
 
-	Text string
+	Text string `db:"text"`
 }
 
 func NewTextRecord(key string, text string) *textRecord {

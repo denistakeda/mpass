@@ -15,13 +15,13 @@ func init() {
 }
 
 type bankCardRecord struct {
-	ID             string
-	LastUpdateDate time.Time
+	ID             string    `db:"id"`
+	LastUpdateDate time.Time `db:"last_update_date"`
 
-	CardNumber string
-	Month      time.Month
-	Day        uint32
-	Code       uint
+	CardNumber string     `db:"card_number"`
+	Month      time.Month `db:"month"`
+	Day        uint32     `db:"day"`
+	Code       uint       `db:"code"`
 }
 
 func NewBankCardRecord(cardNumber string, month time.Month, day uint32, code uint) *bankCardRecord {

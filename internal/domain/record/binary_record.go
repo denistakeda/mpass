@@ -15,10 +15,10 @@ func init() {
 }
 
 type binaryRecord struct {
-	ID             string
-	LastUpdateDate time.Time
+	ID             string    `db:"id"`
+	LastUpdateDate time.Time `db:"last_update_date"`
 
-	Binary []byte
+	Binary []byte `db:"binary"`
 }
 
 func NewBinaryRecord(key string, data []byte) *binaryRecord {

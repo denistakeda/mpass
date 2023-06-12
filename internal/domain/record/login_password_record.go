@@ -19,11 +19,11 @@ func init() {
 }
 
 type loginPasswordRecord struct {
-	ID             string
-	LastUpdateDate time.Time
+	ID             string    `db:"id"`
+	LastUpdateDate time.Time `db:"last_update_date"`
 
-	Login    string
-	Password string
+	Login    string `db:"login"`
+	Password string `db:"password"`
 }
 
 func NewLoginPasswordRecord(login, password string) *loginPasswordRecord {
