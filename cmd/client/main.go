@@ -27,7 +27,7 @@ func main() {
 	grpcClient := grpc_client.New(conf.Address)
 	defer grpcClient.Close()
 
-	clientStorage := client_storage.New(statePath)
+	clientStorage := client_storage.NewInMemory(statePath)
 	defer clientStorage.Close()
 
 	clientService := client_service.New(clientStorage, grpcClient)

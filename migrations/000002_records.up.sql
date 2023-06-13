@@ -1,7 +1,7 @@
 create table text_record (
     id varchar(255) primary key,
     last_update_date timestamp not null,
-    user_login int,
+    user_login varchar(255),
 
     text text,
 
@@ -13,7 +13,7 @@ create table text_record (
 create table bank_card_record (
     id varchar(255) primary key,
     last_update_date timestamp not null,
-    user_login int,
+    user_login varchar(255),
 
     card_number varchar(16) not null,
     month int not null,
@@ -28,7 +28,7 @@ create table bank_card_record (
 create table binary_record (
     id varchar(255) primary key,
     last_update_date timestamp not null,
-    user_login int,
+    user_login varchar(255),
 
     "binary" bytea,
 
@@ -40,7 +40,7 @@ create table binary_record (
 create table login_password_record (
     id varchar(255) primary key,
     last_update_date timestamp not null,
-    user_login int,
+    user_login varchar(255),
 
     login varchar(255) not null,
     password varchar(255) not null,

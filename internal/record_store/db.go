@@ -27,7 +27,47 @@ func NewWithDb(db *sqlx.DB) *dbStore {
 }
 
 func (s *dbStore) AddRecords(ctx context.Context, login string, records []record.Record) error {
-	panic("implement!")
+	if len(records) == 0 {
+		return nil
+	}
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to start a transaction: %w", err)
+	}
+
+	for _, rec := range records {
+		switch r := rec.(type) {
+		case *record.LoginPasswordRecord:
+			tx.ExecContext(ctx,
+				"insert into login_password_record (id, last_update_date, login, password, user_login) values ($1, $2, $3, $4, $5)",
+				r.ID, r.LastUpdateDate, r.Login, r.Password, login,
+			)
+		case *record.BankCardRecord:
+			tx.ExecContext(ctx,
+				"insert into bank_card_record (id, last_update_date, card_number, month, day, code, user_login) values ($1, $2, $3, $4, $5, $6, $7)",
+				r.ID, r.LastUpdateDate, r.CardNumber, r.Month, r.Day, r.Code, login,
+			)
+		case *record.BinaryRecord:
+			tx.ExecContext(ctx,
+				"insert into binary_record (id, last_update_date, binary, user_login) values ($1, $2, $3, $4)",
+				r.ID, r.LastUpdateDate, r.Binary, login,
+			)
+		case *record.TextRecord:
+			tx.ExecContext(ctx,
+				"insert into binary_record (id, last_update_date, text, user_login) values ($1, $2, $3, $4)",
+				r.ID, r.LastUpdateDate, r.Text, login,
+			)
+		default:
+			return fmt.Errorf("unknown record type: %v", r)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit records: %w", err)
+	}
+
+	return nil
 }
 
 func (s *dbStore) AllRecords(ctx context.Context, login string) ([]record.Record, error) {
@@ -62,8 +102,7 @@ func (s *dbStore) getRecords(ctx context.Context, login string, tableName tableN
 	return func() error {
 		return s.db.SelectContext(
 			ctx, recs,
-			"select * from $1 where user_login=$2",
-			tableName,
+			fmt.Sprintf("select * from %s where user_login=$2", tableName),
 			login,
 		)
 	}

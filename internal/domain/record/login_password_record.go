@@ -8,17 +8,17 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var _ Record = (*loginPasswordRecord)(nil)
+var _ Record = (*LoginPasswordRecord)(nil)
 
 func init() {
-	gob.Register(&binaryRecord{})
+	gob.Register(&BinaryRecord{})
 }
 
 func init() {
-	gob.Register(&loginPasswordRecord{})
+	gob.Register(&LoginPasswordRecord{})
 }
 
-type loginPasswordRecord struct {
+type LoginPasswordRecord struct {
 	ID             string    `db:"id"`
 	LastUpdateDate time.Time `db:"last_update_date"`
 
@@ -26,8 +26,8 @@ type loginPasswordRecord struct {
 	Password string `db:"password"`
 }
 
-func NewLoginPasswordRecord(login, password string) *loginPasswordRecord {
-	return &loginPasswordRecord{
+func NewLoginPasswordRecord(login, password string) *LoginPasswordRecord {
+	return &LoginPasswordRecord{
 		ID:             login,
 		LastUpdateDate: time.Now(),
 
@@ -36,8 +36,8 @@ func NewLoginPasswordRecord(login, password string) *loginPasswordRecord {
 	}
 }
 
-func loginPasswordRecordFromProto(id string, lastUpdateDate time.Time, p *proto.LoginPasswordRecord) *loginPasswordRecord {
-	return &loginPasswordRecord{
+func loginPasswordRecordFromProto(id string, lastUpdateDate time.Time, p *proto.LoginPasswordRecord) *LoginPasswordRecord {
+	return &LoginPasswordRecord{
 		ID:             id,
 		LastUpdateDate: lastUpdateDate,
 
@@ -46,15 +46,15 @@ func loginPasswordRecordFromProto(id string, lastUpdateDate time.Time, p *proto.
 	}
 }
 
-func (r *loginPasswordRecord) GetId() string {
+func (r *LoginPasswordRecord) GetId() string {
 	return r.ID
 }
 
-func (r *loginPasswordRecord) GetLastUpdateDate() time.Time {
+func (r *LoginPasswordRecord) GetLastUpdateDate() time.Time {
 	return r.LastUpdateDate
 }
 
-func (r *loginPasswordRecord) ToProto() *proto.Record {
+func (r *LoginPasswordRecord) ToProto() *proto.Record {
 	return &proto.Record{
 		Id:             r.ID,
 		LastUpdateDate: timestamppb.New(r.LastUpdateDate),
@@ -69,7 +69,7 @@ func (r *loginPasswordRecord) ToProto() *proto.Record {
 }
 
 // ProvideToClient implements Record
-func (r *loginPasswordRecord) ProvideToClient(printer printer) error {
+func (r *LoginPasswordRecord) ProvideToClient(printer printer) error {
 	printer.Printf("Password: %s\n", r.Password)
 	return nil
 }
