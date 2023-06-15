@@ -2,6 +2,8 @@ package record
 
 import (
 	"encoding/gob"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/denistakeda/mpass/proto"
@@ -58,7 +60,6 @@ func (r *BinaryRecord) ToProto() *proto.Record {
 	}
 }
 
-// ProvideToClient implements Record
-func (*BinaryRecord) ProvideToClient(printer printer) error {
-	panic("unimplemented")
+func (r *BinaryRecord) ProvideToClient(printer printer) error {
+	return os.WriteFile(fmt.Sprintf("./%s", r), r.Binary, 760)
 }
