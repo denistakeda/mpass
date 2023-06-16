@@ -2,8 +2,8 @@ package record_store
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/denistakeda/mpass/internal/domain/record"
 	"github.com/jmoiron/sqlx"
@@ -66,45 +66,63 @@ func (s *dbStore) AddRecords(ctx context.Context, login string, records []record
 
 func (s *dbStore) AllRecords(ctx context.Context, login string) ([]record.Record, error) {
 	var (
-		res                  []record.Record
-		loginPasswordRecords []record.Record
-		binaryRecords        []record.Record
-		textRecords          []record.Record
-		bankCardRecords      []record.Record
+		loginPasswordRecords []*record.LoginPasswordRecord
+		binaryRecords        []*record.BinaryRecord
+		textRecords          []*record.TextRecord
+		bankCardRecords      []*record.BankCardRecord
 	)
 
 	g, gCtx := errgroup.WithContext(ctx)
 
-	g.Go(s.getRecords(gCtx, login, loginPasswordTableName, &loginPasswordRecords))
-	g.Go(s.getRecords(gCtx, login, binaryTableName, &binaryRecords))
-	g.Go(s.getRecords(gCtx, login, textTableName, &textRecords))
-	g.Go(s.getRecords(gCtx, login, bankCardTableName, &bankCardRecords))
+	g.Go(getRecords(gCtx, s.db, login, loginPasswordTableName, &loginPasswordRecords, "id", "last_update_date", "login", "password"))
+	g.Go(getRecords(gCtx, s.db, login, binaryTableName, &binaryRecords, "id", "last_update_date", "\"binary\""))
+	g.Go(getRecords(gCtx, s.db, login, textTableName, &textRecords, "id", "last_update_date", "text"))
+	g.Go(getRecords(gCtx, s.db, login, bankCardTableName, &bankCardRecords, "id", "last_update_date", "card_number", "month", "day", "code"))
 
 	if err := g.Wait(); err != nil {
 		return nil, fmt.Errorf("failed to fetch all the records: %w", err)
 	}
 
-	res = append(res, loginPasswordRecords...)
-	res = append(res, binaryRecords...)
-	res = append(res, textRecords...)
-	res = append(res, bankCardRecords...)
+	res := make([]record.Record, 0, len(loginPasswordRecords)+len(binaryRecords)+len(textRecords)+len(bankCardRecords))
+	for _, r := range loginPasswordRecords {
+		res = append(res, r)
+	}
+	for _, r := range binaryRecords {
+		res = append(res, r)
+	}
+	for _, r := range textRecords {
+		res = append(res, r)
+	}
+	for _, r := range bankCardRecords {
+		res = append(res, r)
+	}
 
 	return res, nil
 }
 
-func (s *dbStore) getRecords(ctx context.Context, login string, tableName tableNameT, recs *[]record.Record) func() error {
+func getRecords[T record.Record](ctx context.Context, db *sqlx.DB, login string, tableName tableNameT, recs *[]T, columns ...string) func() error {
 	return func() error {
-		return s.db.SelectContext(
+		columns := strings.Join(columns, ", ")
+		sqlexpr := fmt.Sprintf("select %s from %s where user_login=$1", columns, tableName)
+		err := db.SelectContext(
 			ctx, recs,
-			fmt.Sprintf("select * from %s where user_login=$2", tableName),
+			sqlexpr,
 			login,
 		)
+		if err != nil {
+			return fmt.Errorf("failed to execute query %q for user %q, error: %v", sqlexpr, login, err)
+		}
+		return nil
 	}
 }
 
 func upsertLoginPasswordRecord(ctx context.Context, tx *sqlx.Tx, r *record.LoginPasswordRecord, userLogin string) error {
 	var old record.LoginPasswordRecord
-	err := tx.GetContext(ctx, &old, "select * from login_password_record where id=$1", r.ID)
+	err := tx.GetContext(ctx, &old, `
+		select id, last_update_date, login, password
+		from login_password_record
+		where id=$1
+	`, r.ID)
 
 	if err != nil {
 		_, err = tx.ExecContext(ctx,
@@ -123,7 +141,11 @@ func upsertLoginPasswordRecord(ctx context.Context, tx *sqlx.Tx, r *record.Login
 
 func upsertBankCardRecord(ctx context.Context, tx *sqlx.Tx, r *record.BankCardRecord, userLogin string) error {
 	var old record.BankCardRecord
-	err := tx.GetContext(ctx, &old, "select * from bank_card_record where id=$1", r.ID)
+	err := tx.GetContext(ctx, &old, `
+		select id, last_update_date, card_number, month, day, code
+		from bank_card_record
+		where id=$1
+	`, r.ID)
 
 	if err != nil {
 		_, err = tx.ExecContext(ctx,

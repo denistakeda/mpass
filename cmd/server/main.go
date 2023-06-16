@@ -89,12 +89,11 @@ func makeStores(logger zerolog.Logger, databaseURI string, inMemory bool) (ports
 	if inMemory {
 		return user_store.NewInMemory(), record_store.NewInMemory()
 	} else {
-		db, err := db.NewDB(databaseURI)
+		db, err := db.NewDB(databaseURI, "file://migrations")
 		if err != nil {
 			logger.Fatal().Err(err).Msg("failed to initiate database")
 		}
 
-		// TODO: create the record store with DB
 		return user_store.NewWithDB(db), record_store.NewWithDb(db)
 	}
 }
