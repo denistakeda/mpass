@@ -24,7 +24,7 @@ type (
 	}
 )
 
-func New(filepath string) *clientStorage {
+func NewInMemory(filepath string) *clientStorage {
 	return &clientStorage{filepath: filepath}
 }
 

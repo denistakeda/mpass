@@ -8,21 +8,21 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var _ Record = (*textRecord)(nil)
+var _ Record = (*TextRecord)(nil)
 
 func init() {
-	gob.Register(&textRecord{})
+	gob.Register(&TextRecord{})
 }
 
-type textRecord struct {
-	ID             string
-	LastUpdateDate time.Time
+type TextRecord struct {
+	ID             string    `db:"id"`
+	LastUpdateDate time.Time `db:"last_update_date"`
 
-	Text string
+	Text string `db:"text"`
 }
 
-func NewTextRecord(key string, text string) *textRecord {
-	return &textRecord{
+func NewTextRecord(key string, text string) *TextRecord {
+	return &TextRecord{
 		ID:             key,
 		LastUpdateDate: time.Now(),
 
@@ -30,8 +30,8 @@ func NewTextRecord(key string, text string) *textRecord {
 	}
 }
 
-func textRecordFromProto(id string, lastUpdateDate time.Time, p *proto.TextRecord) *textRecord {
-	return &textRecord{
+func textRecordFromProto(id string, lastUpdateDate time.Time, p *proto.TextRecord) *TextRecord {
+	return &TextRecord{
 		ID:             id,
 		LastUpdateDate: lastUpdateDate,
 
@@ -39,15 +39,15 @@ func textRecordFromProto(id string, lastUpdateDate time.Time, p *proto.TextRecor
 	}
 }
 
-func (r *textRecord) GetId() string {
+func (r *TextRecord) GetId() string {
 	return r.ID
 }
 
-func (r *textRecord) GetLastUpdateDate() time.Time {
+func (r *TextRecord) GetLastUpdateDate() time.Time {
 	return r.LastUpdateDate
 }
 
-func (r *textRecord) ToProto() *proto.Record {
+func (r *TextRecord) ToProto() *proto.Record {
 	return &proto.Record{
 		Id:             r.ID,
 		LastUpdateDate: timestamppb.New(r.LastUpdateDate),
@@ -58,7 +58,7 @@ func (r *textRecord) ToProto() *proto.Record {
 	}
 }
 
-func (r *textRecord) ProvideToClient(printer printer) error {
+func (r *TextRecord) ProvideToClient(printer printer) error {
 	printer.Printf("Text:\n %s", r.Text)
 	return nil
 }

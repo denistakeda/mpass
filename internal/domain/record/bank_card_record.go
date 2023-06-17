@@ -8,24 +8,24 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var _ Record = (*bankCardRecord)(nil)
+var _ Record = (*BankCardRecord)(nil)
 
 func init() {
-	gob.Register(&bankCardRecord{})
+	gob.Register(&BankCardRecord{})
 }
 
-type bankCardRecord struct {
-	ID             string
-	LastUpdateDate time.Time
+type BankCardRecord struct {
+	ID             string    `db:"id"`
+	LastUpdateDate time.Time `db:"last_update_date"`
 
-	CardNumber string
-	Month      time.Month
-	Day        uint32
-	Code       uint
+	CardNumber string     `db:"card_number"`
+	Month      time.Month `db:"month"`
+	Day        uint32     `db:"day"`
+	Code       uint       `db:"code"`
 }
 
-func NewBankCardRecord(cardNumber string, month time.Month, day uint32, code uint) *bankCardRecord {
-	return &bankCardRecord{
+func NewBankCardRecord(cardNumber string, month time.Month, day uint32, code uint) *BankCardRecord {
+	return &BankCardRecord{
 		ID:             cardNumber,
 		LastUpdateDate: time.Now(),
 
@@ -36,8 +36,8 @@ func NewBankCardRecord(cardNumber string, month time.Month, day uint32, code uin
 	}
 }
 
-func bankCardRecordFromProto(id string, lastUpdateDate time.Time, p *proto.BankCardRecord) *bankCardRecord {
-	return &bankCardRecord{
+func bankCardRecordFromProto(id string, lastUpdateDate time.Time, p *proto.BankCardRecord) *BankCardRecord {
+	return &BankCardRecord{
 		ID:             id,
 		LastUpdateDate: lastUpdateDate,
 
@@ -48,15 +48,15 @@ func bankCardRecordFromProto(id string, lastUpdateDate time.Time, p *proto.BankC
 	}
 }
 
-func (r *bankCardRecord) GetId() string {
+func (r *BankCardRecord) GetId() string {
 	return r.ID
 }
 
-func (r *bankCardRecord) GetLastUpdateDate() time.Time {
+func (r *BankCardRecord) GetLastUpdateDate() time.Time {
 	return r.LastUpdateDate
 }
 
-func (r *bankCardRecord) ToProto() *proto.Record {
+func (r *BankCardRecord) ToProto() *proto.Record {
 	return &proto.Record{
 		Id:             r.ID,
 		LastUpdateDate: timestamppb.New(r.LastUpdateDate),
@@ -72,7 +72,7 @@ func (r *bankCardRecord) ToProto() *proto.Record {
 	}
 }
 
-func (r *bankCardRecord) ProvideToClient(printer printer) error {
+func (r *BankCardRecord) ProvideToClient(printer printer) error {
 	printer.Printf("Card Number: %s\nDate: %d/%d   Code: %s", r.CardNumber, r.Month, r.Day, r.Code)
 	return nil
 }

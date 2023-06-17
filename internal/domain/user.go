@@ -1,6 +1,6 @@
 package domain
 
 type User struct {
-	Login        string
-	PasswordHash string
+	Login        string `db:"login"`
+	PasswordHash string `db:"password"`
 }

@@ -11,25 +11,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type (
-	authService struct {
-		secret string
+type authService struct {
+	secret string
 
-		logger    zerolog.Logger
-		userStore userStore
-	}
-
-	userStore interface {
-		AddNewUser(ctx context.Context, login, passwordHash string) error
-		GetUser(ctx context.Context, login string) (domain.User, error)
-	}
-)
+	logger    zerolog.Logger
+	userStore ports.UserStore
+}
 
 type NewAuthServiceParams struct {
 	Secret string
 
 	LogService ports.LogService
-	UserStore  userStore
+	UserStore  ports.UserStore
 }
 
 func New(params NewAuthServiceParams) *authService {

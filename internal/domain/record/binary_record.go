@@ -2,27 +2,29 @@ package record
 
 import (
 	"encoding/gob"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/denistakeda/mpass/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-var _ Record = (*binaryRecord)(nil)
+var _ Record = (*BinaryRecord)(nil)
 
 func init() {
-	gob.Register(&binaryRecord{})
+	gob.Register(&BinaryRecord{})
 }
 
-type binaryRecord struct {
-	ID             string
-	LastUpdateDate time.Time
+type BinaryRecord struct {
+	ID             string    `db:"id"`
+	LastUpdateDate time.Time `db:"last_update_date"`
 
-	Binary []byte
+	Binary []byte `db:"binary"`
 }
 
-func NewBinaryRecord(key string, data []byte) *binaryRecord {
-	return &binaryRecord{
+func NewBinaryRecord(key string, data []byte) *BinaryRecord {
+	return &BinaryRecord{
 		ID:             key,
 		LastUpdateDate: time.Now(),
 
@@ -30,8 +32,8 @@ func NewBinaryRecord(key string, data []byte) *binaryRecord {
 	}
 }
 
-func binaryRecordFromProto(id string, lastUpdateDate time.Time, p *proto.BinaryRecord) *binaryRecord {
-	return &binaryRecord{
+func binaryRecordFromProto(id string, lastUpdateDate time.Time, p *proto.BinaryRecord) *BinaryRecord {
+	return &BinaryRecord{
 		ID:             id,
 		LastUpdateDate: lastUpdateDate,
 
@@ -39,15 +41,15 @@ func binaryRecordFromProto(id string, lastUpdateDate time.Time, p *proto.BinaryR
 	}
 }
 
-func (r *binaryRecord) GetId() string {
+func (r *BinaryRecord) GetId() string {
 	return r.ID
 }
 
-func (r *binaryRecord) GetLastUpdateDate() time.Time {
+func (r *BinaryRecord) GetLastUpdateDate() time.Time {
 	return r.LastUpdateDate
 }
 
-func (r *binaryRecord) ToProto() *proto.Record {
+func (r *BinaryRecord) ToProto() *proto.Record {
 	return &proto.Record{
 		Id:             r.ID,
 		LastUpdateDate: timestamppb.New(r.LastUpdateDate),
@@ -58,7 +60,6 @@ func (r *binaryRecord) ToProto() *proto.Record {
 	}
 }
 
-// ProvideToClient implements Record
-func (*binaryRecord) ProvideToClient(printer printer) error {
-	panic("unimplemented")
+func (r *BinaryRecord) ProvideToClient(printer printer) error {
+	return os.WriteFile(fmt.Sprintf("./%s", r), r.Binary, 760)
 }
